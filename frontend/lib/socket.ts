@@ -2,6 +2,8 @@
 
 import { io, type Socket } from "socket.io-client";
 import { GamePhase, Player, useGameStore } from "@/lib/store";
+import { JoinRoomStatus } from "@/types/JoinRoomStatus";
+import { CreateLobbyFormStatus } from "@/types/FormStatus";
 
 let socket: Socket | null = null;
 
@@ -90,11 +92,26 @@ export async function startGame(roomId: string) {
 export async function joinRoom(roomId: string, name: string) {
   const s = getSocket();
   s.connect();
-  const response = await s.emitWithAck("join_room", {
-    roomId,
-    name: name || "Guest",
-  });
-  console.log("joinRoom response", response);
+  try {
+    const response = await s.emitWithAck("join_room", {
+      roomId,
+      name: name || "Guest",
+    });
+    console.log("joinRoom response", response);
+    if (!response.success) {
+      if (response.error === "room_not_found") {
+        return JoinRoomStatus.ROOM_NOT_FOUND; // room not found
+      }
+      if (response.error === "join_room_error") {
+        return JoinRoomStatus.JOIN_ERROR; // join room error
+      }
+      return JoinRoomStatus.JOIN_ERROR; // unknown error
+    }
+    return JoinRoomStatus.SUCCESS; // success
+  } catch (error) {
+    console.error("joinRoom error", error);
+    return JoinRoomStatus.JOIN_ERROR; // unknown error
+  }
 }
 
 export async function leaveRoom(roomId: string) {
@@ -124,54 +141,30 @@ export function readyNextRound() {
 //   getSocket().emit("round_end", { roomId });
 // }
 // Create lobby helper: emits create_lobby and returns roomId via ack or event
-export async function createLobby(
-  name: string,
-  roomIdOverride?: string
-): Promise<string> {
+export async function createLobby(name: string, roomIdOverride?: string) {
   const s = getSocket();
   s.connect();
 
   // Prefer ack pattern if backend supports it
-  const ackPromise = new Promise<string>((resolve, reject) => {
-    let timeoutId: number | NodeJS.Timeout | undefined;
-    try {
-      s.timeout(5000).emit(
-        "create_lobby",
-        { name, roomId: roomIdOverride },
-        (err: unknown, res?: { roomId?: string }) => {
-          if (timeoutId) clearTimeout(timeoutId as NodeJS.Timeout);
-          if (err) return reject(err);
-          if (!res?.roomId) return reject(new Error("No roomId returned"));
-          resolve(res.roomId);
-        }
-      );
-      // Extra guard in case ack never fires
-      timeoutId = setTimeout(
-        () => reject(new Error("create_lobby timed out")),
-        7000
-      );
-    } catch (e) {
-      reject(e);
-    }
-  });
 
   try {
-    const roomId = await ackPromise;
-    return roomId;
-  } catch {
-    // Fallback: wait for server to broadcast lobby_created
-    const eventPromise = new Promise<string>((resolve, reject) => {
-      const onCreated = (payload: { roomId: string }) => {
-        s.off("lobby_created", onCreated);
-        resolve(payload.roomId);
-      };
-      s.on("lobby_created", onCreated);
-      setTimeout(() => {
-        s.off("lobby_created", onCreated);
-        reject(new Error("lobby_created event timed out"));
-      }, 7000);
+    const response = await s.emitWithAck("create_lobby", {
+      name,
+      roomId: roomIdOverride,
     });
-    s.emit("create_lobby", { name, roomId: roomIdOverride });
-    return await eventPromise;
+
+    if (response.error === "room_exists") {
+      return { roomId: "", error: CreateLobbyFormStatus.ROOM_EXISTS };
+    }
+    if (response.error === "create_error") {
+      return { roomId: "", error: CreateLobbyFormStatus.CREATE_ERROR };
+    }
+    return {
+      roomId: response.roomId ?? "",
+      error: CreateLobbyFormStatus.SUCCESS,
+    };
+  } catch (e) {
+    console.error("createLobby error", e);
+    return { roomId: "", error: CreateLobbyFormStatus.CREATE_ERROR };
   }
 }
