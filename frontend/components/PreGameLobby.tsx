@@ -21,13 +21,13 @@ export default function PreGameLobby({
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    setIsReady(playerCount === 2);
+    setIsReady(playerCount >= 2);
   }, [playerCount]);
   useEffect(() => {
     if (phase === "playing" || phase === "round_results") {
       router.push(`/game/${lobbyId}`);
     }
-  }, [phase]);
+  }, [phase, lobbyId, router]);
 
   function startTheGame() {
     if (!isReady) {

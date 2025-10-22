@@ -55,51 +55,53 @@ function startRound(io, roomId, duration = 30) {
 
 export default function gameHandler(io, socket) {
   socket.on("create_lobby", ({ name, roomId }, ack) => {
+    console.log("create_lobby", name, roomId);
     const id = roomId || generateRoomId();
     if (activeRooms.has(id)) {
+      console.log("room exists", id);
       if (ack) return ack({ error: "room_exists" });
-      return;
+      return { error: "room_exists" };
     }
+    console.log("room does not exist", id);
     ensureRoom(id);
-    if (ack) ack({ roomId: id });
-    io.to(socket.id).emit("lobby_created", { roomId: id });
+    console.log("room ensured", id);
+    if (ack) ack({ roomId: id, error: null });
     console.log("lobby created", id);
+    io.to(socket.id).emit("lobby_created", { roomId: id, error: null });
+    return { roomId: id, error: null };
   });
 
-  socket.on("join_room", ({ roomId, name }) => {
-    if (!roomId) return;
-    const room = ensureRoom(roomId);
-    socket.join(roomId);
-    room.players.set(socket.id, {
-      name: name || `Player-${socket.id.slice(-4)}`,
-    });
-    room.playerCount = room.players.size;
-    console.log("player count updated", room.playerCount);
-    io.to(roomId).emit("player_count_update", room.playerCount);
-    console.log("phase updated", room.phase);
-    io.to(roomId).emit("update_phase", room.phase);
-    io.to(roomId).emit(
-      "players_update",
-      Array.from(room.players.values()).map((player) => ({
-        id: player.id,
-        name: player.name,
-      }))
-    );
-    if (!room.scores.has(socket.id)) room.scores.set(socket.id, 0);
-
-    // // If two players, start the round
-    // if (room.playerCount === 2) {
-    //   startRound(io, roomId, 30);
-    //   // Emit initial scores array
-    //   const scores = Array.from(room.scores.entries()).map(
-    //     ([playerId, score]) => ({
-    //       playerId,
-    //       name: room.players.get(playerId)?.name || "Player",
-    //       score,
-    //     })
-    //   );
-    //   io.to(roomId).emit("score_update", scores);
-    // }
+  socket.on("join_room", ({ roomId, name }, ack) => {
+    try {
+      const room = ensureRoom(roomId);
+      if (!room) {
+        if (ack) return ack({ error: "room_not_found" });
+        return { error: "room_not_found" };
+      }
+      socket.join(roomId);
+      room.players.set(socket.id, {
+        name: name || `Player-${socket.id.slice(-4)}`,
+      });
+      room.playerCount = room.players.size;
+      console.log("player count updated", room.playerCount);
+      io.to(roomId).emit("player_count_update", room.playerCount);
+      console.log("phase updated", room.phase);
+      io.to(roomId).emit("update_phase", room.phase);
+      io.to(roomId).emit(
+        "players_update",
+        Array.from(room.players.values()).map((player) => ({
+          id: player.id,
+          name: player.name,
+        }))
+      );
+      if (!room.scores.has(socket.id)) room.scores.set(socket.id, 0);
+      if (ack) ack({ success: true });
+      return { success: true };
+    } catch (error) {
+      console.error("join_room error", error);
+      if (ack) ack({ error: "join_room_error" });
+      return { error: "join_room_error" };
+    }
   });
   socket.on("start_game", ({ roomId }) => {
     const room = activeRooms.get(roomId);
