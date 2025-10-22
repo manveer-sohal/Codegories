@@ -15,6 +15,14 @@ export default function Navbar() {
     router.push("/");
     useGameStore.setState({ phase: "lobby" });
     useGameStore.setState({ playerInput: [] });
+    useGameStore.setState({ roomId: undefined });
+    useGameStore.setState({ playerName: "" });
+    useGameStore.setState({ players: [] });
+    useGameStore.setState({ playerCount: 0 });
+    useGameStore.setState({ scores: [] });
+    useGameStore.setState({ round: 1 });
+    useGameStore.setState({ currentRound: undefined });
+    useGameStore.setState({ lastSubmittedAnswer: undefined });
     leaveRoom(roomId);
   };
   return (
