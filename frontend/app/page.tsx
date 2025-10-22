@@ -2,7 +2,17 @@
 
 import JoinLobbyForm from "@/components/JoinLobbyForm";
 import CreateLobbyForm from "@/components/CreateLobbyForm";
+import { useEffect } from "react";
+import { useGameStore } from "@/lib/store";
+import { useRouter } from "next/navigation";
 export default function Home() {
+  const lobbyId = useGameStore((s) => s.roomId);
+  const router = useRouter();
+
+  //if the lobbyId is set, redirect to the pregame page
+  useEffect(() => {
+    if (lobbyId) router.push(`/pregame/${lobbyId}`);
+  }, [lobbyId, router]);
   return (
     <div className="mx-auto max-w-xl mt-8 ">
       <h1 className="text-3xl font-bold mb-4">Welcome to Codegories</h1>
