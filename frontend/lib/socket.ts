@@ -107,6 +107,9 @@ export async function joinRoom(roomId: string, name: string) {
       }
       return JoinRoomStatus.JOIN_ERROR; // unknown error
     }
+    useGameStore.setState({ roomId: roomId });
+    useGameStore.setState({ phase: "lobby" });
+    useGameStore.setState({ playerName: name });
     return JoinRoomStatus.SUCCESS; // success
   } catch (error) {
     console.error("joinRoom error", error);
@@ -115,6 +118,7 @@ export async function joinRoom(roomId: string, name: string) {
 }
 
 export async function leaveRoom(roomId: string) {
+  console.log("leaveRoom", roomId);
   const s = getSocket();
   s.connect();
   const response = await s.emitWithAck("leave_room", {
@@ -152,6 +156,12 @@ export async function createLobby(name: string, roomIdOverride?: string) {
       name,
       roomId: roomIdOverride,
     });
+    if (response.success) {
+      return {
+        roomId: response.roomId ?? "",
+        error: CreateLobbyFormStatus.SUCCESS,
+      };
+    }
 
     if (response.error === "room_exists") {
       return { roomId: "", error: CreateLobbyFormStatus.ROOM_EXISTS };
@@ -159,12 +169,18 @@ export async function createLobby(name: string, roomIdOverride?: string) {
     if (response.error === "create_error") {
       return { roomId: "", error: CreateLobbyFormStatus.CREATE_ERROR };
     }
-    return {
-      roomId: response.roomId ?? "",
-      error: CreateLobbyFormStatus.SUCCESS,
-    };
+    return { roomId: "", error: CreateLobbyFormStatus.CREATE_ERROR };
   } catch (e) {
     console.error("createLobby error", e);
     return { roomId: "", error: CreateLobbyFormStatus.CREATE_ERROR };
   }
+}
+
+export async function checkRoomValid(roomId: string) {
+  const s = getSocket();
+  s.connect();
+  const response = await s.emitWithAck("check_room_valid", {
+    roomId,
+  });
+  return response.valid;
 }
