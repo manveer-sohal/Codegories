@@ -11,7 +11,6 @@ import { JoinRoomFormStatus } from "@/types/FormStatus";
 function JoinLobbyForm() {
   const [nickname, setNickname] = useState("");
   const [lobbyId, setLobbyId] = useState("");
-  const setPlayerName = useGameStore((s) => s.setPlayerName);
   const [nicknameError, setNicknameError] = useState<
     JoinRoomFormStatus | undefined
   >(undefined);
@@ -28,10 +27,7 @@ function JoinLobbyForm() {
     const nicknameError = validateNickname(nickname);
     if (nicknameError) setNicknameError(nicknameError as JoinRoomFormStatus);
 
-    return (
-      nicknameError === JoinRoomFormStatus.SUCCESS &&
-      lobbyIdError === JoinRoomFormStatus.SUCCESS
-    );
+    return nicknameError === undefined && lobbyIdError === undefined;
   };
 
   const handleJoinLobby = async () => {
@@ -40,7 +36,7 @@ function JoinLobbyForm() {
     }
     const name = nickname.trim() || "Guest";
 
-    setPlayerName(name);
+    // setPlayerName(name);
 
     const joinRoomStatus = await joinRoom(lobbyId, name);
 
@@ -52,6 +48,7 @@ function JoinLobbyForm() {
       setLobbyIdError(JoinRoomFormStatus.JOIN_ERROR);
       return;
     }
+
     router.push(`/pregame/${lobbyId}`);
   };
 
