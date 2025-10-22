@@ -33,13 +33,6 @@ export default function GameInput() {
     }
   }, [value]);
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!value.trim()) return;
-    submitAnswer(value.trim());
-    setLastSubmittedAnswer(value.trim());
-    setValue("");
-  }
   const handleSubmitAnswer = (answer: string) => {
     console.log("answer", playerAnswer);
     if (playerAnswer.has(answer)) {
@@ -59,10 +52,16 @@ export default function GameInput() {
     });
     setPlayerInput([...playerAnswer]);
     setInputStatus("correct");
+    submitAnswer(value.trim());
+    setLastSubmittedAnswer(value.trim());
+    setValue("");
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-2 w-full">
+    <form
+      onSubmit={(e: React.FormEvent<HTMLFormElement>) => e.preventDefault()}
+      className="flex items-center gap-2 w-full"
+    >
       <input
         ref={inputRef}
         value={value}
