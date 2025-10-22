@@ -21,6 +21,10 @@ function CreateLobbyForm() {
     CreateLobbyFormStatus | undefined
   >(undefined);
 
+  const [formStatus, setFormStatus] = useState<
+    CreateLobbyFormStatus | undefined
+  >(undefined);
+
   async function handleCreateLobby() {
     const nicknameError = validateNickname(nickname);
     if (nicknameError) setNicknameError(nicknameError as CreateLobbyFormStatus);
@@ -38,11 +42,11 @@ function CreateLobbyForm() {
         return;
       }
       if (response.error === CreateLobbyFormStatus.CREATE_ERROR) {
-        setLobbyIdError(CreateLobbyFormStatus.CREATE_ERROR);
+        console.error("createLobby error", response.error);
+        setFormStatus(CreateLobbyFormStatus.CREATE_ERROR);
         return;
       }
       if (response.error === CreateLobbyFormStatus.SUCCESS) {
-        joinRoom(response.roomId, name);
         router.push(`/pregame/${response.roomId}`);
         return;
       }
@@ -52,7 +56,7 @@ function CreateLobbyForm() {
   }
 
   return (
-    <div className="bg-red-500 p-4 gap-2 flex flex-col">
+    <div className="bg-green-500 p-4 gap-2 flex flex-col">
       <p className="text-white/70 mt-2">Create a new lobby.</p>
       <Input
         value={nickname}
@@ -70,6 +74,11 @@ function CreateLobbyForm() {
       <Button onClick={handleCreateLobby} variant={"secondary"}>
         Create Lobby
       </Button>
+      {formStatus === CreateLobbyFormStatus.CREATE_ERROR && (
+        <p className="text-red-500 mt-2">
+          Something went wrong. Failed to create lobby
+        </p>
+      )}
     </div>
   );
 }

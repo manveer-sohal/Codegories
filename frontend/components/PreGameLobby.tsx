@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { useGameStore } from "@/lib/store";
-import { createLobby, joinRoom, startGame } from "@/lib/socket";
+import { checkRoomValid, startGame } from "@/lib/socket";
 import PlayerList from "./PlayerList";
 
 export default function PreGameLobby({
