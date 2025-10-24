@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useGameStore } from "@/lib/store";
-import { checkRoomValid, startGame } from "@/lib/socket";
+import { startGame, setGame } from "@/lib/socket";
 import PlayerList from "./PlayerList";
 
 export default function PreGameLobby({
@@ -16,15 +16,15 @@ export default function PreGameLobby({
   const router = useRouter();
   const playerCount = useGameStore((s) => s.playerCount);
   const phase = useGameStore((s) => s.phase);
-  console.log("phase", phase);
   const [isReady, setIsReady] = useState(false);
+  const game = useGameStore((s) => s.game);
 
   useEffect(() => {
     setIsReady(playerCount >= 2);
   }, [playerCount]);
   useEffect(() => {
     if (phase === "playing" || phase === "round_results") {
-      router.push(`/game/${lobbyId}`);
+      console.log("How did we get here?");
     }
   }, [phase, lobbyId, router]);
 
@@ -39,10 +39,12 @@ export default function PreGameLobby({
       alert("No lobby id");
       return;
     }
-    startGame(lobbyId);
-
-    router.push(`/game/${lobbyId}`);
+    startGame(lobbyId, game);
   }
+  const setTheGame = (game: "codegories" | "speedstorm" | "trivia") => {
+    console.log("setting game", game, lobbyId);
+    setGame(lobbyId || "", game);
+  };
 
   return (
     <div className="mx-auto max-w-xl mt-8 ">
@@ -65,6 +67,45 @@ export default function PreGameLobby({
       >
         start game
       </button>
+      <div className=" w-full flex flex-col gap-2 p-2">
+        <h2 className="text-white">Select A Game</h2>
+        <div
+          className={`flex flex-row gap-2 cursor-pointer p-1 ${
+            game === "codegories" ? "border-4 border-white" : ""
+          }`}
+          onClick={() => setTheGame("codegories")}
+        >
+          <div className="h-40 w-2/5 bg-blue-500 rounded-md"></div>
+          <div className="h-40 w-4/5 bg-green-500 rounded-md p-2">
+            <h1 className="text-white">Codegories</h1>
+            <p className="text-white">A game of categories and answers.</p>
+          </div>
+        </div>
+        <div
+          className={`flex flex-row gap-2 cursor-pointer p-1 ${
+            game === "speedstorm" ? "border-4 border-white" : ""
+          }`}
+          onClick={() => setTheGame("speedstorm")}
+        >
+          <div className="h-40 w-2/5 bg-blue-500 rounded-md"></div>
+          <div className="h-40 w-4/5 bg-green-500 rounded-md p-2">
+            <h1 className="text-white">SpeedStorm</h1>
+            <p className="text-white">A game of speed and knowledge.</p>
+          </div>
+        </div>
+        <div
+          className={`flex flex-row gap-2 cursor-pointer p-1 ${
+            game === "trivia" ? "border-4 border-white" : ""
+          }`}
+          onClick={() => setTheGame("trivia")}
+        >
+          <div className="h-40 w-2/5 bg-blue-500 rounded-md"></div>
+          <div className="h-40 w-4/5 bg-green-500 rounded-md p-2">
+            <h1 className="text-white">Trivia</h1>
+            <p className="text-white">A game of trivia and answers.</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
