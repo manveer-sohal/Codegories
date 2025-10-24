@@ -1,10 +1,16 @@
 import { create } from "zustand";
 
-export type GamePhase = "lobby" | "playing" | "round_results" | "final_results";
+export type GamePhase =
+  | "None"
+  | "lobby"
+  | "playing"
+  | "round_results"
+  | "final_results";
 
 export interface Player {
   id: string;
   name: string;
+  playerType: "Host" | "Player";
 }
 
 export interface PlayerScore {
@@ -22,6 +28,8 @@ export interface RoundData {
 }
 
 export interface GameState {
+  game: "codegories" | "speedstorm" | "trivia";
+  playerType: "None" | "Host" | "Player";
   playerName: string;
   playerId?: string;
   roomId?: string;
@@ -34,6 +42,7 @@ export interface GameState {
   lastSubmittedAnswer?: string;
   playerCount: number;
   playerInput: string[];
+  setGame: (game: "codegories" | "speedstorm" | "trivia") => void;
   setPlayerInput: (input: string[]) => void;
   setPlayerName: (playerName: string) => void;
   setRoomId: (roomId: string) => void;
@@ -49,15 +58,19 @@ export interface GameState {
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
+  game: "codegories",
+  playerType: "None",
   playerName: "",
-  phase: "lobby",
+  phase: "None",
   score: 0,
   round: 1,
   scores: [],
   playerCount: 0,
   players: [],
   playerInput: [],
-
+  setGame: (game: "codegories" | "speedstorm" | "trivia") => set({ game }),
+  setPlayerType: (playerType: "None" | "Host" | "Player") =>
+    set({ playerType }),
   setPlayerInput: (input: string[]) => set({ playerInput: input }),
   getPlayers: () => get().players,
   setPlayers: (players: Player[]) => set({ players }),
