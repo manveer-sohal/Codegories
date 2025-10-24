@@ -8,12 +8,17 @@ import { useEffect } from "react";
 export default function PreGamePage() {
   const params = useParams<{ roomId: string }>();
   const router = useRouter();
-
+  const phase = useGameStore((s) => s.phase);
   useEffect(() => {
+    if (phase === "None") {
+      router.push("/");
+      return;
+    }
     if (!params.roomId) {
       router.push("/");
       return;
     }
+
     //check if the room is valid
     checkRoomValid(params.roomId)
       .then((valid: boolean) => {
@@ -27,7 +32,7 @@ export default function PreGamePage() {
         router.push("/");
         return;
       });
-  }, [params.roomId, router]);
+  }, [params.roomId, router, phase]);
 
   return (
     <div className="mx-auto max-w-xl mt-8 ">
