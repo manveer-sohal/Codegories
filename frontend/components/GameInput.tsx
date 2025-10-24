@@ -11,16 +11,16 @@ export default function GameInput() {
   const inputRef = useRef<HTMLInputElement>(null);
   const letter = useGameStore((s) => s.currentRound?.letter);
   const setLastSubmittedAnswer = useGameStore((s) => s.setLastSubmittedAnswer);
-  const playerInput = useGameStore((s) => s.playerInput);
   const setPlayerInput = useGameStore((s) => s.setPlayerInput);
   const [inputStatus, setInputStatus] = useState<
     "correct" | "incorrect" | "pending" | "empty" | "duplicate"
   >("empty");
+  const timeRemaining = useGameStore((s) => s.currentRound?.timeRemaining);
   const [playerAnswer, setPlayerAnswer] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    setValue(playerInput[0] || "");
-  }, [playerInput]);
+  // useEffect(() => {
+  //   setValue(playerInput[0] || "");
+  // }, [playerInput]);
 
   useEffect(() => {
     setValue("");
@@ -63,6 +63,7 @@ export default function GameInput() {
       className="flex items-center gap-2 w-full"
     >
       <input
+        disabled={timeRemaining ? timeRemaining <= 0 : false}
         ref={inputRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
