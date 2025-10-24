@@ -49,7 +49,9 @@ function JoinLobbyForm() {
       return;
     }
 
-    router.push(`/pregame/${lobbyId}`);
+    console.log("joining room", lobbyId);
+
+    router.push(`/game/${lobbyId}`);
   };
 
   return (
