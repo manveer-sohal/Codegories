@@ -6,7 +6,9 @@ export default function PlayerList() {
     <div>
       <h2>Player List</h2>
       {players.map((player) => (
-        <div key={player.id}>{player.name}</div>
+        <div key={player.id}>
+          {player.name} {player.playerType}
+        </div>
       ))}
     </div>
   );

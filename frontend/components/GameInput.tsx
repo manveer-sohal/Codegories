@@ -11,16 +11,16 @@ export default function GameInput() {
   const inputRef = useRef<HTMLInputElement>(null);
   const letter = useGameStore((s) => s.currentRound?.letter);
   const setLastSubmittedAnswer = useGameStore((s) => s.setLastSubmittedAnswer);
-  const playerInput = useGameStore((s) => s.playerInput);
   const setPlayerInput = useGameStore((s) => s.setPlayerInput);
   const [inputStatus, setInputStatus] = useState<
     "correct" | "incorrect" | "pending" | "empty" | "duplicate"
   >("empty");
+  const timeRemaining = useGameStore((s) => s.currentRound?.timeRemaining);
   const [playerAnswer, setPlayerAnswer] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    setValue(playerInput[0] || "");
-  }, [playerInput]);
+  // useEffect(() => {
+  //   setValue(playerInput[0] || "");
+  // }, [playerInput]);
 
   useEffect(() => {
     setValue("");
@@ -33,13 +33,6 @@ export default function GameInput() {
     }
   }, [value]);
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!value.trim()) return;
-    submitAnswer(value.trim());
-    setLastSubmittedAnswer(value.trim());
-    setValue("");
-  }
   const handleSubmitAnswer = (answer: string) => {
     console.log("answer", playerAnswer);
     if (playerAnswer.has(answer)) {
@@ -59,11 +52,18 @@ export default function GameInput() {
     });
     setPlayerInput([...playerAnswer]);
     setInputStatus("correct");
+    submitAnswer(value.trim());
+    setLastSubmittedAnswer(value.trim());
+    setValue("");
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-2 w-full">
+    <form
+      onSubmit={(e: React.FormEvent<HTMLFormElement>) => e.preventDefault()}
+      className="flex items-center gap-2 w-full"
+    >
       <input
+        disabled={timeRemaining ? timeRemaining <= 0 : false}
         ref={inputRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}

@@ -38,6 +38,7 @@ function attachCoreListeners(s: Socket) {
       roundNumber: number;
       duration: number;
       startedAt?: number;
+      game: "codegories" | "speedstorm" | "trivia";
     }) => {
       useGameStore.setState({
         phase: "playing",
@@ -77,15 +78,57 @@ function attachCoreListeners(s: Socket) {
   });
 
   s.on("players_update", (players: Player[]) => {
+    console.log("players_update", players);
     useGameStore.setState({ players: players });
   });
   s.on("start_game", () => {
+    console.log("starting game");
     useGameStore.setState({ phase: "playing" });
+  });
+  s.on("kick_player", (playerId: string) => {
+    console.log("kicking player", playerId);
+    useGameStore.setState({
+      players: useGameStore
+        .getState()
+        .players.filter((player) => player.id !== playerId),
+    });
+  });
+
+  s.on("leave_room", () => {
+    console.log("leaving room");
+    useGameStore.setState({ phase: "None" });
+    useGameStore.setState({ playerType: "None" });
+    useGameStore.setState({ roomId: undefined });
+    useGameStore.setState({ playerName: "" });
+    useGameStore.setState({ players: [] });
+    useGameStore.setState({ scores: [] });
+    useGameStore.setState({ playerCount: 0 });
+    useGameStore.setState({ playerInput: [] });
+    useGameStore.setState({ currentRound: undefined });
+    useGameStore.setState({ game: "codegories" });
+  });
+  s.on("game_update", (game: "codegories" | "speedstorm" | "trivia") => {
+    useGameStore.setState({ game: game });
+    console.log("game_update", game);
   });
 }
 
-export async function startGame(roomId: string) {
+export async function setGame(
+  roomId: string,
+  game: "codegories" | "speedstorm" | "trivia"
+) {
   const s = getSocket();
+  console.log("set_game", roomId, game);
+  s.connect();
+  s.emit("set_game", { roomId, game });
+}
+
+export async function startGame(
+  roomId: string,
+  game: "codegories" | "speedstorm" | "trivia"
+) {
+  const s = getSocket();
+  console.log("starting game", roomId, game);
   s.connect();
   s.emit("start_game", { roomId });
 }
@@ -107,6 +150,10 @@ export async function joinRoom(roomId: string, name: string) {
       }
       return JoinRoomStatus.JOIN_ERROR; // unknown error
     }
+    useGameStore.setState({ roomId: roomId });
+    useGameStore.setState({ playerType: "Player" });
+    useGameStore.setState({ playerName: name });
+    // useGameStore.setState({ phase: "lobby" });
     return JoinRoomStatus.SUCCESS; // success
   } catch (error) {
     console.error("joinRoom error", error);
@@ -114,12 +161,39 @@ export async function joinRoom(roomId: string, name: string) {
   }
 }
 
+export async function deleteLobby(roomId: string) {
+  console.log("deleteLobby", roomId);
+  const s = getSocket();
+  s.connect();
+  try {
+    const response = await s.emitWithAck("delete_lobby", {
+      roomId,
+    });
+    return response.success;
+  } catch (error) {
+    console.error("deleteLobby error", error);
+    return false;
+  }
+}
+
 export async function leaveRoom(roomId: string) {
+  console.log("leaveRoom", roomId);
   const s = getSocket();
   s.connect();
   const response = await s.emitWithAck("leave_room", {
     roomId,
+    playerType: useGameStore.getState().playerType,
   });
+
+  useGameStore.setState({ phase: "None" });
+  useGameStore.setState({ playerType: "None" });
+  useGameStore.setState({ roomId: undefined });
+  useGameStore.setState({ playerName: "" });
+  useGameStore.setState({ players: [] });
+  useGameStore.setState({ scores: [] });
+  useGameStore.setState({ playerCount: 0 });
+  useGameStore.setState({ playerInput: [] });
+  useGameStore.setState({ currentRound: undefined });
   console.log("leaveRoom response", response);
 }
 
@@ -145,13 +219,20 @@ export async function createLobby(name: string, roomIdOverride?: string) {
   const s = getSocket();
   s.connect();
 
-  // Prefer ack pattern if backend supports it
-
   try {
     const response = await s.emitWithAck("create_lobby", {
       name,
       roomId: roomIdOverride,
     });
+    if (response.success) {
+      useGameStore.setState({ roomId: response.roomId ?? "" });
+      useGameStore.setState({ phase: "lobby" });
+      useGameStore.setState({ playerType: "Host" });
+      return {
+        roomId: response.roomId ?? "",
+        error: CreateLobbyFormStatus.SUCCESS,
+      };
+    }
 
     if (response.error === "room_exists") {
       return { roomId: "", error: CreateLobbyFormStatus.ROOM_EXISTS };
@@ -159,12 +240,18 @@ export async function createLobby(name: string, roomIdOverride?: string) {
     if (response.error === "create_error") {
       return { roomId: "", error: CreateLobbyFormStatus.CREATE_ERROR };
     }
-    return {
-      roomId: response.roomId ?? "",
-      error: CreateLobbyFormStatus.SUCCESS,
-    };
+    return { roomId: "", error: CreateLobbyFormStatus.CREATE_ERROR };
   } catch (e) {
     console.error("createLobby error", e);
     return { roomId: "", error: CreateLobbyFormStatus.CREATE_ERROR };
   }
+}
+
+export async function checkRoomValid(roomId: string) {
+  const s = getSocket();
+  s.connect();
+  const response = await s.emitWithAck("check_room_valid", {
+    roomId,
+  });
+  return response.valid;
 }
