@@ -13,7 +13,7 @@ export default function Navbar() {
   const leaveLobby = () => {
     if (!roomId) return;
     router.push("/");
-    useGameStore.setState({ phase: "lobby" });
+    useGameStore.setState({ phase: "None" });
     useGameStore.setState({ playerInput: [] });
     useGameStore.setState({ roomId: undefined });
     useGameStore.setState({ playerName: "" });
