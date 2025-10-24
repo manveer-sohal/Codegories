@@ -47,7 +47,7 @@ function CreateLobbyForm() {
         return;
       }
       if (response.error === CreateLobbyFormStatus.SUCCESS) {
-        router.push(`/pregame/${response.roomId}`);
+        router.push(`/game/${response.roomId}`);
         return;
       }
     } catch (e) {
