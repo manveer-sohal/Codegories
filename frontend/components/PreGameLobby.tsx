@@ -18,7 +18,24 @@ export default function PreGameLobby({
   const phase = useGameStore((s) => s.phase);
   const [isReady, setIsReady] = useState(false);
   const game = useGameStore((s) => s.game);
-
+  const playerType = useGameStore((s) => s.playerType);
+  const games = [
+    {
+      name: "codegories",
+      description: "A game of categories and answers.",
+      image: "/images/codegories.png",
+    },
+    {
+      name: "speedstorm",
+      description: "A game of speed and knowledge.",
+      image: "/images/speedstorm.png",
+    },
+    {
+      name: "trivia",
+      description: "A game of trivia and answers.",
+      image: "/images/trivia.png",
+    },
+  ];
   useEffect(() => {
     setIsReady(playerCount >= 2);
   }, [playerCount]);
@@ -55,7 +72,34 @@ export default function PreGameLobby({
           : `Created Lobby ID: ${createdLobbyId}`}
       </p>
       <PlayerList />
-      {}
+
+      <div className=" w-full flex flex-col gap-2 p-2">
+        <div className="bg-white/10 rounded-md p-2">
+          <h2 className="text-white text-center">Select A Game</h2>
+        </div>
+        {games.map((game_item) => (
+          <button
+            key={game_item.name}
+            disabled={playerType !== "Host"}
+            className={`flex flex-row gap-2 cursor-pointer p-1 rounded-md ${
+              game === game_item.name
+                ? "border-4 border-white"
+                : "border-2 border-white/10"
+            }`}
+            onClick={() =>
+              setTheGame(
+                game_item.name as "codegories" | "speedstorm" | "trivia"
+              )
+            }
+          >
+            <div className="h-40 w-2/5 bg-blue-500 rounded-md"></div>
+            <div className="h-40 w-4/5 bg-green-500 rounded-md p-2">
+              <h1 className="text-white">{game_item.name}</h1>
+              <p className="text-white">{game_item.description}</p>
+            </div>
+          </button>
+        ))}
+      </div>
       <button
         disabled={!isReady}
         className={`${
@@ -67,45 +111,6 @@ export default function PreGameLobby({
       >
         start game
       </button>
-      <div className=" w-full flex flex-col gap-2 p-2">
-        <h2 className="text-white">Select A Game</h2>
-        <div
-          className={`flex flex-row gap-2 cursor-pointer p-1 ${
-            game === "codegories" ? "border-4 border-white" : ""
-          }`}
-          onClick={() => setTheGame("codegories")}
-        >
-          <div className="h-40 w-2/5 bg-blue-500 rounded-md"></div>
-          <div className="h-40 w-4/5 bg-green-500 rounded-md p-2">
-            <h1 className="text-white">Codegories</h1>
-            <p className="text-white">A game of categories and answers.</p>
-          </div>
-        </div>
-        <div
-          className={`flex flex-row gap-2 cursor-pointer p-1 ${
-            game === "speedstorm" ? "border-4 border-white" : ""
-          }`}
-          onClick={() => setTheGame("speedstorm")}
-        >
-          <div className="h-40 w-2/5 bg-blue-500 rounded-md"></div>
-          <div className="h-40 w-4/5 bg-green-500 rounded-md p-2">
-            <h1 className="text-white">SpeedStorm</h1>
-            <p className="text-white">A game of speed and knowledge.</p>
-          </div>
-        </div>
-        <div
-          className={`flex flex-row gap-2 cursor-pointer p-1 ${
-            game === "trivia" ? "border-4 border-white" : ""
-          }`}
-          onClick={() => setTheGame("trivia")}
-        >
-          <div className="h-40 w-2/5 bg-blue-500 rounded-md"></div>
-          <div className="h-40 w-4/5 bg-green-500 rounded-md p-2">
-            <h1 className="text-white">Trivia</h1>
-            <p className="text-white">A game of trivia and answers.</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
