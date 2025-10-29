@@ -27,10 +27,16 @@ function CreateLobbyForm() {
 
   async function handleCreateLobby() {
     const nicknameError = validateNickname(nickname);
-    if (nicknameError) setNicknameError(nicknameError as CreateLobbyFormStatus);
+    if (nicknameError) {
+      setNicknameError(nicknameError as CreateLobbyFormStatus);
+      return;
+    }
 
     const lobbyIdError = validateLobbyId(createdLobbyId);
-    if (lobbyIdError) setLobbyIdError(lobbyIdError as CreateLobbyFormStatus);
+    if (lobbyIdError) {
+      setLobbyIdError(lobbyIdError as CreateLobbyFormStatus);
+      return;
+    }
 
     const name = nickname.trim() || "Host";
     setPlayerName(name);
