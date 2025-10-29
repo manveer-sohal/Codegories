@@ -27,7 +27,16 @@ export interface RoundData {
   startedAt?: number; // epoch ms
 }
 
+export interface CodegoriesRoundData {
+  categories: string[];
+  answers: string[];
+  letter: string;
+  timeRemaining: number; // seconds
+  startedAt?: number; // epoch ms
+}
+
 export interface GameState {
+  codegoriesRoundData?: CodegoriesRoundData;
   game: "codegories" | "speedstorm" | "trivia";
   playerType: "None" | "Host" | "Player";
   playerName: string;
@@ -36,6 +45,7 @@ export interface GameState {
   phase: GamePhase;
   score: number;
   round: number;
+  // duration: number;
   currentRound?: RoundData;
   scores: PlayerScore[];
   players: Player[];
@@ -49,6 +59,7 @@ export interface GameState {
   setPlayers: (players: Player[]) => void;
   setPhase: (phase: GamePhase) => void;
   setRound: (round: number) => void;
+  // setDuration: (duration: number) => void;
   setCurrentRound: (round: RoundData | undefined) => void;
   updateTimeRemaining: (seconds: number) => void;
   setScores: (scores: PlayerScore[]) => void;
@@ -64,6 +75,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   phase: "None",
   score: 0,
   round: 1,
+  // duration: 30,
   scores: [],
   playerCount: 0,
   players: [],
@@ -78,6 +90,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   setRoomId: (roomId) => set({ roomId }),
   setPhase: (phase) => set({ phase }),
   setRound: (round) => set({ round }),
+  // setDuration: (duration) => set({ duration }),
   setCurrentRound: (currentRound) => set({ currentRound }),
   updateTimeRemaining: (seconds) =>
     set((state) =>
