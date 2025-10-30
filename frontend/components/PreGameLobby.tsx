@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useGameStore } from "@/lib/store";
 import { startGame, setGame } from "@/lib/socket";
 import PlayerList from "./PlayerList";
+import { newRound } from "@/lib/utils";
 
 export default function PreGameLobby({
   lobbyId,
@@ -37,9 +38,11 @@ export default function PreGameLobby({
     },
   ];
   useEffect(() => {
+    console.log("game type", game);
     setIsReady(playerCount >= 2);
-  }, [playerCount]);
+  }, [playerCount, game]);
   useEffect(() => {
+    newRound();
     if (phase === "playing" || phase === "round_results") {
       console.log("How did we get here?");
     }
@@ -101,9 +104,9 @@ export default function PreGameLobby({
         ))}
       </div>
       <button
-        disabled={!isReady}
+        disabled={!isReady || playerType !== "Host"}
         className={`${
-          isReady
+          isReady && playerType === "Host"
             ? "bg-purple-600 text-white hover:bg-purple-500 focus-visible:ring-purple-400"
             : "bg-gray-500 text-white"
         } w-full py-2 rounded-md`}
