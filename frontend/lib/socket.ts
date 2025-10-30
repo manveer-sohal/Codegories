@@ -55,21 +55,27 @@ function attachCoreListeners(s: Socket) {
   );
 
   s.on("timer_update", (seconds: number) => {
+    console.log("update_times", seconds);
     useGameStore.getState().updateTimeRemaining(seconds);
   });
 
   s.on(
     "score_update",
     (scores: { playerId: string; name: string; score: number }[]) => {
+      console.log("score update");
       useGameStore.getState().setScores(scores);
     }
   );
 
   s.on("round_end", () => {
-    useGameStore.setState({ phase: "round_results" });
+    console.log("round end");
+
+    useGameStore.setState({ phase: "final_results" });
   });
 
   s.on("player_count_update", (playerCount: number) => {
+    console.log(" update player count");
+
     useGameStore.setState({ playerCount: playerCount });
   });
   s.on("update_phase", (phase: GamePhase) => {
@@ -120,7 +126,22 @@ export async function setGame(
   const s = getSocket();
   console.log("set_game", roomId, game);
   s.connect();
+  // useGameStore.setState({ duration: 5 });
   s.emit("set_game", { roomId, game });
+}
+
+export async function resetGame(roomId: string) {
+  const s = getSocket();
+  console.log("resetting game", roomId);
+  s.connect();
+  try {
+    const response = await s.emitWithAck("reset_game", { roomId });
+    useGameStore.setState({ playerInput: [] });
+    return response.success;
+  } catch (error) {
+    console.error("resetGame error", error);
+    return false;
+  }
 }
 
 export async function startGame(
@@ -132,14 +153,15 @@ export async function startGame(
   s.connect();
   s.emit("start_game", { roomId });
 }
-export async function joinRoom(roomId: string, name: string) {
+export async function joinRoom(
+  roomId: string,
+  name: string
+): Promise<JoinRoomStatus> {
   const s = getSocket();
   s.connect();
+  console.log("Trying to join room", roomId, name);
   try {
-    const response = await s.emitWithAck("join_room", {
-      roomId,
-      name: name || "Guest",
-    });
+    const response = await s.emitWithAck("join_room", { roomId, name });
     console.log("joinRoom response", response);
     if (!response.success) {
       if (response.error === "room_not_found") {
@@ -203,26 +225,28 @@ export function submitAnswer(answer: string) {
   getSocket().emit("submit_answer", { roomId, answer });
 }
 
-export function readyNextRound() {
-  const { roomId } = useGameStore.getState();
-  if (!roomId) return;
-  getSocket().emit("ready_next_round", { roomId });
-}
-
-// export function roundEnd() {
+// export function readyNextRound() {
 //   const { roomId } = useGameStore.getState();
 //   if (!roomId) return;
-//   getSocket().emit("round_end", { roomId });
+//   getSocket().emit("ready_next_round", { roomId });
 // }
+
+export function roundEnd() {
+  console.log("end round");
+  const { roomId } = useGameStore.getState();
+  if (!roomId) return;
+  getSocket().emit("round_end", { roomId });
+}
 // Create lobby helper: emits create_lobby and returns roomId via ack or event
 export async function createLobby(name: string, roomIdOverride?: string) {
   const s = getSocket();
   s.connect();
 
   try {
+    console.log("creating lobby", name, roomIdOverride);
     const response = await s.emitWithAck("create_lobby", {
-      name,
       roomId: roomIdOverride,
+      name,
     });
     if (response.success) {
       useGameStore.setState({ roomId: response.roomId ?? "" });
