@@ -20,7 +20,7 @@ export default function GameRoomPage() {
 
   useEffect(() => {
     console.log("phase", phase);
-    if (players.length > 0) {
+    if (players.length > 0 && phase === "playing") {
       setScores(
         players.map((player) => ({
           playerId: player.id,
