@@ -11,6 +11,7 @@ export interface Player {
   id: string;
   name: string;
   playerType: "Host" | "Player";
+  wins: number;
 }
 
 export interface PlayerScore {
@@ -42,6 +43,7 @@ export interface GameState {
   playerName: string;
   playerId?: string;
   roomId?: string;
+  wins: number;
   phase: GamePhase;
   score: number;
   round: number;
@@ -73,6 +75,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   playerType: "None",
   playerName: "",
   phase: "None",
+  wins: 0,
   score: 0,
   round: 1,
   // duration: 30,
@@ -90,6 +93,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   setRoomId: (roomId) => set({ roomId }),
   setPhase: (phase) => set({ phase }),
   setRound: (round) => set({ round }),
+  setWins: (wins: number) => set({ wins }),
   // setDuration: (duration) => set({ duration }),
   setCurrentRound: (currentRound) => set({ currentRound }),
   updateTimeRemaining: (seconds) =>
