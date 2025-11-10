@@ -18,18 +18,18 @@ export default function GameRoomPage() {
   const players = useGameStore((s) => s.players);
   const game = useGameStore((s) => s.game);
 
-  useEffect(() => {
-    console.log("phase", phase);
-    if (players.length > 0 && phase === "playing") {
-      setScores(
-        players.map((player) => ({
-          playerId: player.id,
-          name: player.name,
-          score: 0,
-        }))
-      );
-    }
-  }, [players, setScores, phase]);
+  // useEffect(() => {
+  //   console.log("phase", phase);
+  //   if (players.length > 0 && phase === "playing") {
+  //     setScores(
+  //       players.map((player) => ({
+  //         playerId: player.id,
+  //         name: player.name,
+  //         score: 0,
+  //       }))
+  //     );
+  //   }
+  // }, [players, setScores, phase]);
 
   useEffect(() => {
     if (phase == "None") {
