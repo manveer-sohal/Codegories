@@ -9,28 +9,20 @@ export default function Timer() {
   const currentRound = useGameStore((s) => s.currentRound);
   const duration = 30;
   const serverSeconds = currentRound?.timeRemaining || duration;
-  const startedAt = currentRound?.startedAt;
 
   // Client-side drift compensation using startedAt if present
   const [seconds, setSeconds] = useState(serverSeconds);
-
   useEffect(() => {
     setSeconds(serverSeconds);
-    console.log("serverSeconds", serverSeconds);
     // console.log("serverSeconds <= 0", serverSeconds <= 0);
     if (serverSeconds <= 0) {
       setSeconds(0);
-      roundEnd();
+      // roundEnd();
     }
   }, [serverSeconds]);
 
   const percent = useMemo(() => {
     const total = duration;
-    console.log("total", total);
-    console.log(
-      "percentage",
-      Math.max(0, Math.min(100, (seconds / total) * 100))
-    );
     return Math.max(0, Math.min(100, (seconds / total) * 100));
   }, [seconds, duration]);
 
