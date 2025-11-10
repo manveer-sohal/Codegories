@@ -12,7 +12,13 @@ app.get("/", (_, res) => res.send("Codegories backend running 🚀"));
 
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: "*", methods: ["GET", "POST"] },
+  cors: {
+    origin: [
+      "https://codegories-git-feature-multiplayer-manveer-sohals-projects.vercel.app/",
+      "http://localhost:3000",
+    ],
+    methods: ["GET", "POST"],
+  },
 });
 
 io.on("connection", (socket) => {

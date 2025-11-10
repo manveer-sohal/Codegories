@@ -8,8 +8,11 @@ import { CreateLobbyFormStatus } from "@/types/FormStatus";
 let socket: Socket | null = null;
 
 export function getSocket(): Socket {
+  console.log("getSocket");
   if (!socket) {
     const url = process.env.NEXT_PUBLIC_SOCKET_URL ?? "ws://localhost:4000";
+    console.log("url", url);
+
     socket = io(url, {
       transports: ["websocket"],
       autoConnect: false,

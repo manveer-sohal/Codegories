@@ -3,7 +3,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { useGameStore } from "@/lib/store";
-import { roundEnd } from "@/lib/socket";
 
 export default function Timer() {
   const currentRound = useGameStore((s) => s.currentRound);

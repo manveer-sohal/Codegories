@@ -2,10 +2,9 @@
 
 import JoinLobbyForm from "@/components/JoinLobbyForm";
 import CreateLobbyForm from "@/components/CreateLobbyForm";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useGameStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
-import { leaveRoom } from "@/lib/socket";
 export default function Home() {
   const lobbyId = useGameStore((s) => s.roomId);
   const phase = useGameStore((s) => s.phase);
