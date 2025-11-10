@@ -37,14 +37,16 @@ function JoinLobbyForm() {
     const name = nickname.trim() || "Guest";
 
     // setPlayerName(name);
-
-    const joinRoomStatus = await joinRoom(lobbyId, name);
-
-    if (joinRoomStatus === JoinRoomStatus.ROOM_NOT_FOUND) {
+    console.log("joining room", lobbyId, name);
+    const joinRoomStatusAck = await joinRoom(lobbyId, name);
+    console.log("joinRoomStatusAck", joinRoomStatusAck);
+    if (joinRoomStatusAck === JoinRoomStatus.ROOM_NOT_FOUND) {
+      console.log("room not found");
       setLobbyIdError(JoinRoomFormStatus.LOBBY_ID_NOT_FOUND);
       return;
     }
-    if (joinRoomStatus === JoinRoomStatus.JOIN_ERROR) {
+    if (joinRoomStatusAck === JoinRoomStatus.JOIN_ERROR) {
+      console.log("join error");
       setLobbyIdError(JoinRoomFormStatus.JOIN_ERROR);
       return;
     }
