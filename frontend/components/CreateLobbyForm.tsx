@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
-import { createLobby, joinRoom } from "@/lib/socket";
+import { createLobby } from "@/lib/socket";
 import { useRouter } from "next/navigation";
 import { useGameStore } from "@/lib/store";
 import Input from "./ui/Input";

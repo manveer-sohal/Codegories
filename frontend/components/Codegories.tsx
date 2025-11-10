@@ -3,7 +3,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import CategoryCard from "./CategoryCard";
 
 import PlayerList from "./PlayerList";
-import Scoreboard from "./Scoreboard";
 import Timer from "./Timer";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";

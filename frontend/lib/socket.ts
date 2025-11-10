@@ -55,7 +55,7 @@ function attachCoreListeners(s: Socket) {
   );
 
   s.on("timer_update", (seconds: number) => {
-    console.log("update_times", seconds);
+    // console.log("update_times", seconds);
     useGameStore.getState().updateTimeRemaining(seconds);
   });
 

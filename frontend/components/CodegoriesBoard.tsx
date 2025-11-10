@@ -1,4 +1,3 @@
-import { useGameStore } from "@/lib/store";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import {
@@ -10,6 +9,7 @@ import {
   ProgrammingKeywords,
   Frameworks,
 } from "@/app/data/Data";
+import { useGameStore } from "@/lib/store";
 
 export default function CodegoriesBoard({ letter }: { letter: string }) {
   // const currentRound = useGameStore((s) => s.currentRound);
@@ -17,7 +17,9 @@ export default function CodegoriesBoard({ letter }: { letter: string }) {
   const [answers, setAnswers] = useState<{ [key: string]: string }>({});
   // const categories = codegoriesRoundData?.categories ?? [];
   const [submitted, setSubmitted] = useState<boolean>(false);
-  const [score, setScore] = useState<number>(0);
+  const incrementScore = useGameStore((s) => s.incrementScore);
+  const playerId = useGameStore((s) => s.playerId);
+
   const categories = [
     "Data Structure",
     "Algorithm",
@@ -52,7 +54,7 @@ export default function CodegoriesBoard({ letter }: { letter: string }) {
     if (Frameworks[letter].has(answers["Framework"])) {
       score++;
     }
-    setScore(score);
+    incrementScore(playerId ?? "", score);
   };
 
   return (
