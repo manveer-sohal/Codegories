@@ -3,36 +3,23 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { useGameStore } from "@/lib/store";
-// import { roundEnd } from "@/lib/socket";
+import { roundEnd } from "@/lib/socket";
 
-interface TimerProps {
-  duration?: number; // fallback if store not set
-}
-
-export default function Timer({ duration = 30 }: TimerProps) {
+export default function Timer() {
   const currentRound = useGameStore((s) => s.currentRound);
-  const serverSeconds = currentRound?.timeRemaining ?? duration;
-  const startedAt = currentRound?.startedAt;
+  const duration = 30;
+  const serverSeconds = currentRound?.timeRemaining || duration;
 
   // Client-side drift compensation using startedAt if present
   const [seconds, setSeconds] = useState(serverSeconds);
-
   useEffect(() => {
     setSeconds(serverSeconds);
-    console.log("serverSeconds", serverSeconds);
-    console.log("serverSeconds <= 0", serverSeconds <= 0);
+    // console.log("serverSeconds <= 0", serverSeconds <= 0);
     if (serverSeconds <= 0) {
       setSeconds(0);
       // roundEnd();
     }
   }, [serverSeconds]);
-
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     setSeconds((s) => Math.max(0, s - 1));
-  //   }, 1000);
-  //   return () => clearInterval(interval);
-  // }, []);
 
   const percent = useMemo(() => {
     const total = duration;

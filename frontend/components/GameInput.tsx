@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { submitAnswer } from "@/lib/socket";
 import { useGameStore } from "@/lib/store";
-import { dataStructures } from "@/app/data/dataStructures";
+import { dataStructures } from "@/app/data/Data";
 
 export default function GameInput() {
   const [value, setValue] = useState("");
@@ -35,6 +35,7 @@ export default function GameInput() {
 
   const handleSubmitAnswer = (answer: string) => {
     console.log("answer", playerAnswer);
+    answer = answer.toLowerCase();
     if (playerAnswer.has(answer)) {
       console.log("duplicate");
       setInputStatus("duplicate");
@@ -63,14 +64,22 @@ export default function GameInput() {
       className="flex items-center gap-2 w-full"
     >
       <input
-        disabled={timeRemaining ? timeRemaining <= 0 : false}
+        disabled={
+          !timeRemaining || (timeRemaining && timeRemaining <= 0) ? true : false
+        }
         ref={inputRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Type a valid answer..."
         className="flex-1 rounded-md bg-black/40 border border-white/15 px-3 py-2 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500"
       />
-      <Button onClick={() => handleSubmitAnswer(value)} type="submit">
+      <Button
+        disabled={
+          !timeRemaining || (timeRemaining && timeRemaining <= 0) ? true : false
+        }
+        onClick={() => handleSubmitAnswer(value)}
+        type="submit"
+      >
         Submit
       </Button>
       {inputStatus === "correct" && <p className="text-green-500">Correct</p>}

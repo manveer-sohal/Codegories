@@ -1,5 +1,32 @@
 const activeRooms = new Map();
 
+function roundEnd(io, roomId) {
+  console.log("Round end");
+  const room = activeRooms.get(roomId);
+  if (!room) return;
+
+  // find the winner
+  const winner = Array.from(room.scores.entries()).reduce(
+    (max, [playerId, score]) => {
+      return score > max.score ? { playerId, score } : max;
+    },
+    { playerId: null, score: 0 }
+  );
+  console.log("winner", winner);
+  if (winner.playerId) {
+    room.players.get(winner.playerId).wins += 1;
+  }
+  io.to(roomId).emit(
+    "players_update",
+    Array.from(room.players.values()).map((player) => ({
+      id: player.id,
+      name: player.name,
+      playerType: player.playerType,
+      wins: player.wins,
+    }))
+  );
+}
+
 function joinRoom(io, socket, roomId, name, playerType) {
   try {
     const room = activeRooms.get(roomId);
@@ -7,19 +34,25 @@ function joinRoom(io, socket, roomId, name, playerType) {
       console.error("room not found", roomId);
       return false;
     }
+    console.log("room found", room);
     // player joins room
     socket.join(roomId);
     // add player to room
     room.players.set(socket.id, {
       name: name || `Player-${socket.id.slice(-4)}`,
       playerType: playerType,
+      wins: 0,
     });
     // update player count
     room.playerCount = room.players.size;
+    console.log("game type", room.game);
+
     // send updated player count in room
     io.to(roomId).emit("player_count_update", room.playerCount);
+    io.to(roomId).emit("game_update", room.game);
 
     if (room.phase == "playing") {
+      console.log("change phase to playing:", room.timeRemaining);
       io.to(roomId).emit("timer_update", room.timeRemaining);
       io.to(roomId).emit("round_start", {
         category: room.category,
@@ -40,6 +73,7 @@ function joinRoom(io, socket, roomId, name, playerType) {
         id: player.id,
         name: player.name,
         playerType: player.playerType,
+        wins: player.wins,
       }))
     );
     if (!room.scores.has(socket.id)) room.scores.set(socket.id, 0);
@@ -85,13 +119,14 @@ function createRoom(roomId) {
 
   if (!activeRooms.has(roomId)) {
     activeRooms.set(roomId, {
-      players: new Map(), // socketId -> { name, playerType }
+      players: new Map(), // socketId -> { name, playerType, wins }
       scores: new Map(), // socketId -> number
       round: 1,
       timeRemaining: 0,
       timer: null,
       playerCount: 0,
       phase: "lobby",
+      game: "codegories",
     });
     return true;
   }
@@ -100,7 +135,7 @@ function createRoom(roomId) {
 function ensureRoom(roomId) {
   if (!activeRooms.has(roomId)) {
     activeRooms.set(roomId, {
-      players: new Map(), // socketId -> { name }
+      players: new Map(), // socketId -> { name, playerType, wins }
       scores: new Map(), // socketId -> number
       round: 1,
       timeRemaining: 0,
@@ -112,10 +147,17 @@ function ensureRoom(roomId) {
   return activeRooms.get(roomId);
 }
 
+const chooseRandomLetter = () => {
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+  return randomLetter;
+};
+
 function startRound(io, roomId, duration = 30) {
   const room = ensureRoom(roomId);
   const category = "Data Structures";
-  const letter = "S";
+  const letter = chooseRandomLetter();
+  console.log("Start Round:", room.timeRemaining);
   room.timeRemaining = duration;
   const startedAt = Date.now();
   room.phase = "playing";
@@ -130,12 +172,14 @@ function startRound(io, roomId, duration = 30) {
 
   if (room.timer) clearInterval(room.timer);
   room.timer = setInterval(() => {
-    room.timeRemaining -= 1;
+    room.timeRemaining = room.timeRemaining - 1;
+
     io.to(roomId).emit("timer_update", room.timeRemaining);
-    if (room.timeRemaining <= 0) {
+    if (room.timeRemaining == -1) {
       clearInterval(room.timer);
+      roundEnd(io, roomId);
       room.timer = null;
-      room.phase = "round_results";
+      room.phase = "final_results";
       io.to(roomId).emit("update_phase", room.phase);
       io.to(roomId).emit("round_end", {
         valid: [],
@@ -198,21 +242,32 @@ export default function gameHandler(io, socket) {
     }
   });
 
-  socket.on("join_room", ({ roomId, name }, ack) => {
+  socket.on("join_room", (data, ack) => {
     try {
-      console.log("join_room", roomId, name);
+      console.log("join_room", data);
+      const { roomId, name } = data;
 
       const roomJoinSuccess = joinRoom(io, socket, roomId, name, "Player");
+      console.log("roomJoinSuccess", roomJoinSuccess);
       if (!roomJoinSuccess) {
-        if (ack) return ack({ error: "join_room_error" });
+        console.log("roomJoinSuccess false");
+        if (ack) {
+          console.log("ack error");
+          return ack({ error: "join_room_error" });
+        }
         return { error: "join_room_error" };
       }
+
+      console.log("ack value", ack);
       if (ack) {
+        console.log("ack success");
         ack({ success: true });
         return { success: true };
       }
+      console.log("join_room_error");
       return { error: "join_room_error" };
     } catch (error) {
+      console.log("join_room error", error);
       console.error("join_room error", error);
       if (ack) ack({ error: "join_room_error" });
       return { error: "join_room_error" };
@@ -223,8 +278,8 @@ export default function gameHandler(io, socket) {
     if (!room) return;
     room.phase = "playing";
     room.round = 1;
-    room.timeRemaining = 100;
-    startRound(io, roomId, 100);
+    room.timeRemaining = 30;
+    startRound(io, roomId, 30);
   });
 
   socket.on("submit_answer", ({ roomId, answer }) => {
@@ -259,22 +314,74 @@ export default function gameHandler(io, socket) {
     io.to(roomId).emit("game_update", game);
   });
 
-  // socket.on("round_end", ({ roomId }) => {
-  //   const room = activeRooms.get(roomId);
-  //   if (!room) return;
-  //   room.phase = "round_results";
-  //   console.log("round_end", room.phase);
-  //   io.to(roomId).emit("update_phase", room.phase);
-  // });
+  socket.on("reset_game", ({ roomId }, ack) => {
+    console.log("resetting game", roomId);
+    const room = activeRooms.get(roomId);
+    if (!room) {
+      if (ack) return ack({ error: "room_not_found" });
+      return { error: "room_not_found" };
+    }
+    room.phase = "lobby";
+    room.round = 1;
+    room.timeRemaining = 0;
+    room.timer = null;
+    console.log("players new 1", room.players.values());
+    console.log("SCORES new 1", room.scores);
 
-  socket.on("ready_next_round", ({ roomId }) => {
+    for (const [playerId, _] of room.players.entries()) {
+      if (room.scores.has(playerId)) {
+        room.scores.set(playerId, 0);
+      }
+    }
+
+    console.log("players new 2", room.players.values());
+    console.log("SCORES new 2", room.scores);
+    if (ack) {
+      console.log("ack success");
+      ack({ success: true });
+      io.to(roomId).emit("update_phase", "lobby");
+      io.to(roomId).emit("score_update", []);
+    }
+    return { success: false };
+  });
+  socket.on("round_end", ({ roomId }) => {
+    console.log("Round end");
     const room = activeRooms.get(roomId);
     if (!room) return;
-    room.round += 1;
-    room.phase = "round_results";
+
+    // find the winner
+    const winner = Array.from(room.scores.entries()).reduce(
+      (max, [playerId, score]) => {
+        return score > max.score ? { playerId, score } : max;
+      },
+      { playerId: null, score: 0 }
+    );
+    console.log("winner", winner);
+    room.players.get(winner.playerId).wins += 1;
+    io.to(roomId).emit(
+      "players_update",
+      Array.from(room.players.values()).map((player) => ({
+        id: player.id,
+        name: player.name,
+        playerType: player.playerType,
+        wins: player.wins,
+      }))
+    );
+
+    room.phase = "final_results";
+    console.log("scores", room.scores);
+    console.log("final_results", room.phase);
     io.to(roomId).emit("update_phase", room.phase);
-    startRound(io, roomId, 30);
   });
+
+  // socket.on("ready_next_round", ({ roomId }) => {
+  //   const room = activeRooms.get(roomId);
+  //   if (!room) return;
+  //   room.round += 1;
+  //   room.phase = "round_results";
+  //   io.to(roomId).emit("update_phase", room.phase);
+  //   startRound(io, roomId, 30);
+  // });
   socket.on("leave_room", ({ roomId, playerType }) => {
     const room = activeRooms.get(roomId);
     if (!room) return;

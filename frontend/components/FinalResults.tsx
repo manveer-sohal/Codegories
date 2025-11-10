@@ -7,10 +7,12 @@ import { resetGame } from "@/lib/socket";
 import { useGameStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-export default function ResultsPage() {
+
+export default function FinalResults() {
   const roomId = useGameStore((s) => s.roomId);
   const phase = useGameStore((s) => s.phase);
   const router = useRouter();
+  const scores = useGameStore((s) => s.scores);
 
   useEffect(() => {
     if (phase == "lobby") {
@@ -28,6 +30,7 @@ export default function ResultsPage() {
       alert("Failed to reset game");
     }
   };
+  const sortedScores = scores.slice().sort((a, b) => b.score - a.score);
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
@@ -36,10 +39,8 @@ export default function ResultsPage() {
           <CardTitle>Final Results</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-white/70 text-sm">
-            Results:
-            <Scoreboard />
-          </p>
+          <p className="text-white/70 text-sm">Results:</p>
+          <Scoreboard />
         </CardContent>
       </Card>
       <div className="flex justify-end">
@@ -48,15 +49,33 @@ export default function ResultsPage() {
       <div className="flex justify-center gap-4 items-end">
         <div className="flex flex-col items-center gap-2">
           <p className="text-white/70 text-sm">Second Place</p>
-          <div className="w-20 h-40 bg-white/10 rounded-full"></div>
+          {sortedScores[1] && (
+            <>
+              <p className="text-white/70 text-sm">{sortedScores[1].name}</p>
+              <p className="text-white/70 text-sm">{sortedScores[1].score}</p>
+              <div className="w-20 h-40 bg-white/10 rounded-full"></div>
+            </>
+          )}
         </div>
         <div className="flex flex-col items-center gap-2">
           <p className="text-white/70 text-sm">First Place</p>
-          <div className="w-20 h-60 bg-white/10 rounded-full"></div>
+          {sortedScores[0] && (
+            <>
+              <p className="text-white/70 text-sm">{sortedScores[0].name}</p>
+              <p className="text-white/70 text-sm">{sortedScores[0].score}</p>
+              <div className="w-20 h-60 bg-white/10 rounded-full"></div>
+            </>
+          )}
         </div>
         <div className="flex flex-col items-center gap-2">
           <p className="text-white/70 text-sm">Third Place</p>
-          <div className="w-20 h-25 bg-white/10 rounded-full"></div>
+          {sortedScores[2] && (
+            <>
+              <p className="text-white/70 text-sm">{sortedScores[2].name}</p>
+              <p className="text-white/70 text-sm">{sortedScores[2].score}</p>
+              <div className="w-20 h-25 bg-white/10 rounded-full"></div>
+            </>
+          )}
         </div>
       </div>
     </div>
