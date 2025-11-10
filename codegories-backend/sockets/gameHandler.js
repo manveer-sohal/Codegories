@@ -1,5 +1,32 @@
 const activeRooms = new Map();
 
+function roundEnd(io, roomId) {
+  console.log("Round end");
+  const room = activeRooms.get(roomId);
+  if (!room) return;
+
+  // find the winner
+  const winner = Array.from(room.scores.entries()).reduce(
+    (max, [playerId, score]) => {
+      return score > max.score ? { playerId, score } : max;
+    },
+    { playerId: null, score: 0 }
+  );
+  console.log("winner", winner);
+  if (winner.playerId) {
+    room.players.get(winner.playerId).wins += 1;
+  }
+  io.to(roomId).emit(
+    "players_update",
+    Array.from(room.players.values()).map((player) => ({
+      id: player.id,
+      name: player.name,
+      playerType: player.playerType,
+      wins: player.wins,
+    }))
+  );
+}
+
 function joinRoom(io, socket, roomId, name, playerType) {
   try {
     const room = activeRooms.get(roomId);
@@ -14,6 +41,7 @@ function joinRoom(io, socket, roomId, name, playerType) {
     room.players.set(socket.id, {
       name: name || `Player-${socket.id.slice(-4)}`,
       playerType: playerType,
+      wins: 0,
     });
     // update player count
     room.playerCount = room.players.size;
@@ -119,10 +147,16 @@ function ensureRoom(roomId) {
   return activeRooms.get(roomId);
 }
 
+const chooseRandomLetter = () => {
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+  return randomLetter;
+};
+
 function startRound(io, roomId, duration = 30) {
   const room = ensureRoom(roomId);
   const category = "Data Structures";
-  const letter = "S";
+  const letter = chooseRandomLetter();
   console.log("Start Round:", room.timeRemaining);
   room.timeRemaining = duration;
   const startedAt = Date.now();
@@ -143,6 +177,7 @@ function startRound(io, roomId, duration = 30) {
     io.to(roomId).emit("timer_update", room.timeRemaining);
     if (room.timeRemaining == -1) {
       clearInterval(room.timer);
+      roundEnd(io, roomId);
       room.timer = null;
       room.phase = "final_results";
       io.to(roomId).emit("update_phase", room.phase);
@@ -293,8 +328,7 @@ export default function gameHandler(io, socket) {
     console.log("players new 1", room.players.values());
     console.log("SCORES new 1", room.scores);
 
-    for (const [playerId, player] of room.players.entries()) {
-      console.log("player", player.id);
+    for (const [playerId, _] of room.players.entries()) {
       if (room.scores.has(playerId)) {
         room.scores.set(playerId, 0);
       }
@@ -322,7 +356,17 @@ export default function gameHandler(io, socket) {
       },
       { playerId: null, score: 0 }
     );
+    console.log("winner", winner);
     room.players.get(winner.playerId).wins += 1;
+    io.to(roomId).emit(
+      "players_update",
+      Array.from(room.players.values()).map((player) => ({
+        id: player.id,
+        name: player.name,
+        playerType: player.playerType,
+        wins: player.wins,
+      }))
+    );
 
     room.phase = "final_results";
     console.log("scores", room.scores);
