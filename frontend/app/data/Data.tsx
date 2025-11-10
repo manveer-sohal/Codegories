@@ -35,8 +35,8 @@ export const dataStructures = new Set([
   "suffix automaton",
 ]);
 
-export const DataStructures = {
-  a: [
+export const DataStructures: { [key: string]: Set<string> } = {
+  a: new Set([
     "array",
     "avl tree",
     "adjacency list",
@@ -44,8 +44,8 @@ export const DataStructures = {
     "acyclic graph",
     "abstract syntax tree",
     "association list",
-  ],
-  b: [
+  ]),
+  b: new Set([
     "binary tree",
     "binary search tree",
     "b-tree",
@@ -58,8 +58,8 @@ export const DataStructures = {
     "bucket hashing",
     "binary heap",
     "binomial heap",
-  ],
-  c: [
+  ]),
+  c: new Set([
     "circular queue",
     "circular linked list",
     "cache",
@@ -67,8 +67,8 @@ export const DataStructures = {
     "compressed trie",
     "cuckoo hash table",
     "cartesian tree",
-  ],
-  d: [
+  ]),
+  d: new Set([
     "deque",
     "disjoint set union",
     "doubly linked list",
@@ -76,11 +76,22 @@ export const DataStructures = {
     "dynamic array",
     "decision tree",
     "directed acyclic graph",
-  ],
-  e: ["expression tree", "edge list", "euler tour tree", "extended hash table"],
-  f: ["fibonacci heap", "fenwick tree", "forward list", "flat map", "forest"],
-  g: ["graph", "grid", "general tree", "gap buffer", "growth array"],
-  h: [
+  ]),
+  e: new Set([
+    "expression tree",
+    "edge list",
+    "euler tour tree",
+    "extended hash table",
+  ]),
+  f: new Set([
+    "fibonacci heap",
+    "fenwick tree",
+    "forward list",
+    "flat map",
+    "forest",
+  ]),
+  g: new Set(["graph", "grid", "general tree", "gap buffer", "growth array"]),
+  h: new Set([
     "hash table",
     "hash map",
     "heap",
@@ -88,26 +99,31 @@ export const DataStructures = {
     "hash set",
     "hierarchical graph",
     "hopcroft karp structure",
-  ],
-  i: ["indexed array", "interval tree", "inverted index", "implicit treap"],
-  j: ["jump list", "json tree", "join list"],
-  k: [
+  ]),
+  i: new Set([
+    "indexed array",
+    "interval tree",
+    "inverted index",
+    "implicit treap",
+  ]),
+  j: new Set(["jump list", "json tree", "join list"]),
+  k: new Set([
     "k-d tree",
     "k d tree",
     "kmp table",
     "k-ary heap",
     "k ary heap",
     "key value store",
-  ],
-  l: [
+  ]),
+  l: new Set([
     "linked list",
     "linear array",
     "lookup table",
     "list",
     "lifo stack",
     "lazy segment tree",
-  ],
-  m: [
+  ]),
+  m: new Set([
     "matrix",
     "min heap",
     "max heap",
@@ -115,32 +131,32 @@ export const DataStructures = {
     "multimap",
     "multiset",
     "map",
-  ],
-  n: [
+  ]),
+  n: new Set([
     "n-ary tree",
     "n ary tree",
     "nim game",
     "neural network graph",
     "nested list",
     "namespace tree",
-  ],
-  o: [
+  ]),
+  o: new Set([
     "ordered set",
     "octree",
     "orthogonal list",
     "open address hash table",
     "object tree",
-  ],
-  p: [
+  ]),
+  p: new Set([
     "priority queue",
     "prefix tree",
     "postfix tree",
     "pairing heap",
     "patricia trie",
     "persistent segment tree",
-  ],
-  q: ["queue", "quad tree", "quick union", "quick find"],
-  r: [
+  ]),
+  q: new Set(["queue", "quad tree", "quick union", "quick find"]),
+  r: new Set([
     "red-black tree",
     "red black tree",
     "radix tree",
@@ -148,8 +164,8 @@ export const DataStructures = {
     "range tree",
     "ring buffer",
     "rollback dsu",
-  ],
-  s: [
+  ]),
+  s: new Set([
     "stack",
     "suffix tree",
     "skip list",
@@ -157,33 +173,48 @@ export const DataStructures = {
     "sparse table",
     "set",
     "splay tree",
-  ],
-  t: [
+  ]),
+  t: new Set([
     "trie",
     "tree",
     "treap",
     "ternary tree",
     "threaded binary tree",
     "tournament tree",
-  ],
-  u: ["union-find", "union find", "unrolled linked list", "unordered map"],
-  v: ["van emde boas tree", "vector", "version tree", "vertex cover tree"],
-  w: ["weight balanced tree", "wavelet tree", "word graph", "window buffer"],
-  x: ["xml tree", "xor linked list", "x tree"],
-  y: ["young tableau", "y-fast trie", "y fast trie"],
-  z: ["zipper list", "z-order curve", "z order curve", "z tree"],
+  ]),
+  u: new Set([
+    "union-find",
+    "union find",
+    "unrolled linked list",
+    "unordered map",
+  ]),
+  v: new Set([
+    "van emde boas tree",
+    "vector",
+    "version tree",
+    "vertex cover tree",
+  ]),
+  w: new Set([
+    "weight balanced tree",
+    "wavelet tree",
+    "word graph",
+    "window buffer",
+  ]),
+  x: new Set(["xml tree", "xor linked list", "x tree"]),
+  y: new Set(["young tableau", "y-fast trie", "y fast trie"]),
+  z: new Set(["zipper list", "z-order curve", "z order curve", "z tree"]),
 };
 
-export const Algorithms = {
-  a: [
+export const Algorithms: { [key: string]: Set<string> } = {
+  a: new Set([
     "a star search",
     "a* search",
     "addition algorithm",
     "apriori algorithm",
     "annealing simulated annealing",
     "articulation points",
-  ],
-  b: [
+  ]),
+  b: new Set([
     "bellman ford",
     "binary search",
     "breadth first search",
@@ -191,137 +222,146 @@ export const Algorithms = {
     "bubble sort",
     "bucket sort",
     "backtracking",
-  ],
-  c: [
+  ]),
+  c: new Set([
     "counting sort",
     "convex hull",
     "coin change",
     "closest pair of points",
     "cuckoo hashing",
-  ],
-  d: [
+  ]),
+  d: new Set([
     "depth first search",
     "depth-first search",
     "dijkstra algorithm",
     "divide and conquer",
     "dynamic programming",
     "decision tree learning",
-  ],
-  e: [
+  ]),
+  e: new Set([
     "euclidean algorithm",
     "edmonds karp algorithm",
     "exponential search",
     "extended gcd",
     "expectation maximization",
-  ],
-  f: [
+  ]),
+  f: new Set([
     "floyd warshall",
     "ford fulkerson",
     "fast fourier transform",
     "flood fill",
     "fibonacci search",
-  ],
-  g: [
+  ]),
+  g: new Set([
     "genetic algorithm",
     "gradient descent",
     "gale shapley",
     "gaussian elimination",
     "greedy algorithm",
-  ],
-  h: [
+  ]),
+  h: new Set([
     "heap sort",
     "huffman coding",
     "hill climbing",
     "hopcroft karp algorithm",
     "hashing algorithm",
-  ],
-  i: [
+  ]),
+  i: new Set([
     "insertion sort",
     "iterative deepening search",
     "interval scheduling",
     "interpolation search",
-  ],
-  j: ["johnson algorithm", "jump search", "jarvis march", "gift wrapping"],
-  k: [
+  ]),
+  j: new Set([
+    "johnson algorithm",
+    "jump search",
+    "jarvis march",
+    "gift wrapping",
+  ]),
+  k: new Set([
     "kruskal algorithm",
     "k means clustering",
     "kmp string search",
     "kadane algorithm",
-  ],
-  l: [
+  ]),
+  l: new Set([
     "linear search",
     "longest common subsequence",
     "longest increasing subsequence",
     "local search",
-  ],
-  m: [
+  ]),
+  m: new Set([
     "merge sort",
     "monte carlo method",
     "matrix chain multiplication",
     "minimax algorithm",
     "miller rabin primality test",
-  ],
-  n: [
+  ]),
+  n: new Set([
     "naive bayes classifier",
     "nearest neighbor search",
     "newton method",
     "network flow",
-  ],
-  o: ["optimal binary search tree", "otsu thresholding", "ordered traversal"],
-  p: [
+  ]),
+  o: new Set([
+    "optimal binary search tree",
+    "otsu thresholding",
+    "ordered traversal",
+  ]),
+  p: new Set([
     "prim algorithm",
     "pagerank algorithm",
     "pigeonhole sort",
     "power iteration",
     "perceptron learning",
-  ],
-  q: ["quick sort", "quick select", "quadratic probing"],
-  r: [
+  ]),
+  q: new Set(["quick sort", "quick select", "quadratic probing"]),
+  r: new Set([
     "radix sort",
     "rabin karp",
     "randomized quick sort",
     "recursive binary search",
     "ransac algorithm",
-  ],
-  s: [
+  ]),
+  s: new Set([
     "selection sort",
     "shell sort",
     "shortest path faster algorithm",
     "segment tree query",
     "suffix array construction",
-  ],
-  t: [
+  ]),
+  t: new Set([
     "topological sort",
     "ternary search",
     "tarjan algorithm",
     "travelling salesman problem",
     "tree traversal",
-  ],
-  u: [
+  ]),
+  u: new Set([
     "union find",
     "disjoint set union",
     "uniform cost search",
     "ukkonen suffix tree algorithm",
-  ],
-  v: [
+  ]),
+  v: new Set([
     "voronoi diagram",
     "viterbi algorithm",
     "value iteration",
     "reinforcement learning",
-  ],
-  w: [
+  ]),
+  w: new Set([
     "warshall algorithm",
     "welzl algorithm",
     "smallest enclosing circle",
     "word ladder",
-  ],
-  x: ["xor swap algorithm", "xgboost optimization"],
-  y: ["yen k shortest paths", "yao garbled circuit"],
-  z: ["z algorithm", "zigzag level order traversal"],
+  ]),
+  x: new Set(["xor swap algorithm", "xgboost optimization"]),
+  y: new Set(["yen k shortest paths", "yao garbled circuit"]),
+  z: new Set(["z algorithm", "zigzag level order traversal"]),
 };
 
-export const ProgrammingLanguages = {
-  a: [
+export const ProgrammingLanguages: { [key: string]: Set<string> } = {
+  a: new Set([
     "ada",
     "algol",
     "assembly",
@@ -330,9 +370,17 @@ export const ProgrammingLanguages = {
     "actionscript",
     "apl",
     "autoit",
-  ],
-  b: ["bash", "basic", "batch", "boo", "brainfuck", "blitzmax", "bison"],
-  c: [
+  ]),
+  b: new Set([
+    "bash",
+    "basic",
+    "batch",
+    "boo",
+    "brainfuck",
+    "blitzmax",
+    "bison",
+  ]),
+  c: new Set([
     "c",
     "c++",
     "c#",
@@ -341,16 +389,16 @@ export const ProgrammingLanguages = {
     "clojure",
     "common lisp",
     "coldfusion",
-  ],
-  d: ["dart", "d", "delphi", "dylan", "dragon"],
-  e: ["elixir", "elm", "erlang", "eiffel", "emacs lisp"],
-  f: ["fortran", "f#", "falcon", "factor", "forth"],
-  g: ["go", "groovy", "gambas", "gnuplot", "gdscript"],
-  h: ["haskell", "hack", "harbour", "hol", "haxe"],
-  i: ["icon", "idl", "inform", "io", "isabelle"],
-  j: ["java", "javascript", "julia", "j", "jq"],
-  k: ["kotlin", "korn shell", "karel", "klisp"],
-  l: [
+  ]),
+  d: new Set(["dart", "d", "delphi", "dylan", "dragon"]),
+  e: new Set(["elixir", "elm", "erlang", "eiffel", "emacs lisp"]),
+  f: new Set(["fortran", "f#", "falcon", "factor", "forth"]),
+  g: new Set(["go", "groovy", "gambas", "gnuplot", "gdscript"]),
+  h: new Set(["haskell", "hack", "harbour", "hol", "haxe"]),
+  i: new Set(["icon", "idl", "inform", "io", "isabelle"]),
+  j: new Set(["java", "javascript", "julia", "j", "jq"]),
+  k: new Set(["kotlin", "korn shell", "karel", "klisp"]),
+  l: new Set([
     "lua",
     "lisp",
     "labview",
@@ -359,25 +407,43 @@ export const ProgrammingLanguages = {
     "logo",
     "lean",
     "lex",
-  ],
-  m: ["matlab", "mojo", "mercury", "modula-2", "mumps", "monkey"],
-  n: ["nim", "nasm", "nial", "newtonscript", "nu"],
-  o: ["objective-c", "ocaml", "opencl", "opal", "oberon"],
-  p: ["python", "php", "perl", "pascal", "powershell", "prolog", "processing"],
-  q: ["q#", "qbasic", "qlik", "qml"],
-  r: ["r", "ruby", "rust", "racket", "rexx"],
-  s: ["swift", "scala", "scheme", "smalltalk", "solidity", "shell", "scratch"],
-  t: ["typescript", "tcl", "tex", "thrift", "tranquil"],
-  u: ["unicon", "unreal script", "uno", "uzbl script"],
-  v: ["visual basic", "vba", "verilog", "vhdl", "vala"],
-  w: ["wolfram language", "wren", "whiley", "webassembly"],
-  x: ["xquery", "xaml", "xojo", "xproc"],
-  y: ["yorick", "yql", "yacas"],
-  z: ["zig", "z shell", "zpl", "zimpl"],
+  ]),
+  m: new Set(["matlab", "mojo", "mercury", "modula-2", "mumps", "monkey"]),
+  n: new Set(["nim", "nasm", "nial", "newtonscript", "nu"]),
+  o: new Set(["objective-c", "ocaml", "opencl", "opal", "oberon"]),
+  p: new Set([
+    "python",
+    "php",
+    "perl",
+    "pascal",
+    "powershell",
+    "prolog",
+    "processing",
+    "python",
+    "python 3",
+  ]),
+  q: new Set(["q#", "qbasic", "qlik", "qml"]),
+  r: new Set(["r", "ruby", "rust", "racket", "rexx"]),
+  s: new Set([
+    "swift",
+    "scala",
+    "scheme",
+    "smalltalk",
+    "solidity",
+    "shell",
+    "scratch",
+  ]),
+  t: new Set(["typescript", "tcl", "tex", "thrift", "tranquil"]),
+  u: new Set(["unicon", "unreal script", "uno", "uzbl script"]),
+  v: new Set(["visual basic", "vba", "verilog", "vhdl", "vala"]),
+  w: new Set(["wolfram language", "wren", "whiley", "webassembly"]),
+  x: new Set(["xquery", "xaml", "xojo", "xproc"]),
+  y: new Set(["yorick", "yql", "yacas"]),
+  z: new Set(["zig", "z shell", "zpl", "zimpl"]),
 };
 
-export const TechCompanies = {
-  a: [
+export const TechCompanies: { [key: string]: Set<string> } = {
+  a: new Set([
     "apple",
     "amazon",
     "adobe",
@@ -388,9 +454,17 @@ export const TechCompanies = {
     "airbnb",
     "atlassian",
     "alibaba",
-  ],
-  b: ["bose", "blackberry", "broadcom", "bytedance", "box", "block", "bing"],
-  c: [
+  ]),
+  b: new Set([
+    "bose",
+    "blackberry",
+    "broadcom",
+    "bytedance",
+    "box",
+    "block",
+    "bing",
+  ]),
+  c: new Set([
     "canon",
     "cisco",
     "coinbase",
@@ -398,10 +472,24 @@ export const TechCompanies = {
     "crowdstrike",
     "comcast",
     "crucial",
-  ],
-  d: ["dell", "digitalocean", "discord", "dropbox", "doordash", "databricks"],
-  e: ["ebay", "epic games", "electronic arts", "etsy", "ericsson", "enphase"],
-  f: [
+  ]),
+  d: new Set([
+    "dell",
+    "digitalocean",
+    "discord",
+    "dropbox",
+    "doordash",
+    "databricks",
+  ]),
+  e: new Set([
+    "ebay",
+    "epic games",
+    "electronic arts",
+    "etsy",
+    "ericsson",
+    "enphase",
+  ]),
+  f: new Set([
     "facebook",
     "fujitsu",
     "figma",
@@ -409,10 +497,17 @@ export const TechCompanies = {
     "fortinet",
     "foxconn",
     "fireeye",
-  ],
-  g: ["google", "github", "gigabyte", "godaddy", "general electric", "grubhub"],
-  h: ["hp", "huawei", "hcl", "hitachi", "honeywell", "htc"],
-  i: [
+  ]),
+  g: new Set([
+    "google",
+    "github",
+    "gigabyte",
+    "godaddy",
+    "general electric",
+    "grubhub",
+  ]),
+  h: new Set(["hp", "huawei", "hcl", "hitachi", "honeywell", "htc"]),
+  i: new Set([
     "ibm",
     "intel",
     "instagram",
@@ -420,10 +515,10 @@ export const TechCompanies = {
     "indeed",
     "invidia",
     "imagination technologies",
-  ],
-  j: ["juniper networks", "jbl", "jetbrains", "john deere", "joomla"],
-  k: ["kaspersky", "kingston", "kioxia", "klaviyo", "klarna"],
-  l: [
+  ]),
+  j: new Set(["juniper networks", "jbl", "jetbrains", "john deere", "joomla"]),
+  k: new Set(["kaspersky", "kingston", "kioxia", "klaviyo", "klarna"]),
+  l: new Set([
     "linux",
     "lenovo",
     "lg",
@@ -433,8 +528,8 @@ export const TechCompanies = {
     "lucid software",
     "lyft",
     "lightspeed commerce",
-  ],
-  m: [
+  ]),
+  m: new Set([
     "microsoft",
     "meta",
     "motorola",
@@ -443,20 +538,28 @@ export const TechCompanies = {
     "microstrategy",
     "mondaycom",
     "mongodb",
-  ],
-  n: ["nvidia", "nokia", "nec", "netflix", "netapp", "notion", "nubank"],
-  o: ["oracle", "oppo", "openai", "okta", "opera", "oracle cloud"],
-  p: [
+  ]),
+  n: new Set([
+    "nvidia",
+    "nokia",
+    "nec",
+    "netflix",
+    "netapp",
+    "notion",
+    "nubank",
+  ]),
+  o: new Set(["oracle", "oppo", "openai", "okta", "opera", "oracle cloud"]),
+  p: new Set([
     "paypal",
     "palantir",
     "pinterest",
     "plaid",
     "palo alto networks",
     "pebble",
-  ],
-  q: ["qualcomm", "quora", "quickbooks", "quantcast", "qnap"],
-  r: ["roku", "riot games", "red hat", "roblox", "razor", "ripple"],
-  s: [
+  ]),
+  q: new Set(["qualcomm", "quora", "quickbooks", "quantcast", "qnap"]),
+  r: new Set(["roku", "riot games", "red hat", "roblox", "razor", "ripple"]),
+  s: new Set([
     "sony",
     "samsung",
     "sap",
@@ -467,8 +570,8 @@ export const TechCompanies = {
     "spacex",
     "square enix",
     "stripe",
-  ],
-  t: [
+  ]),
+  t: new Set([
     "twitter",
     "tesla",
     "tiktok",
@@ -477,11 +580,58 @@ export const TechCompanies = {
     "twilio",
     "t mobile",
     "teamviewer",
-  ],
-  u: ["uber", "unity", "unreal engine", "ubuntu", "uptake", "unacademy"],
-  v: ["verizon", "vmware", "visa", "vimeo", "volkswagen", "vodafone"],
-  w: ["walmart", "wework", "whatsapp", "wix", "western digital", "waymo"],
-  x: ["xerox", "xiaomi", "xilinx", "xfinity", "xing"],
-  y: ["yahoo", "yelp", "yandex", "youtube"],
-  z: ["zoom", "zendesk", "zalando", "zynga"],
+  ]),
+  u: new Set([
+    "uber",
+    "unity",
+    "unreal engine",
+    "ubuntu",
+    "uptake",
+    "unacademy",
+  ]),
+  v: new Set(["verizon", "vmware", "visa", "vimeo", "volkswagen", "vodafone"]),
+  w: new Set([
+    "walmart",
+    "wework",
+    "whatsapp",
+    "wix",
+    "western digital",
+    "waymo",
+  ]),
+  x: new Set(["xerox", "xiaomi", "xilinx", "xfinity", "xing"]),
+  y: new Set(["yahoo", "yelp", "yandex", "youtube"]),
+  z: new Set(["zoom", "zendesk", "zalando", "zynga"]),
+};
+
+export const CSBuzzwords: { [key: string]: Set<string> } = {
+  a: new Set(["ai"]),
+  b: new Set(["big data", "blockchain"]),
+  c: new Set(["cloud computing"]),
+  d: new Set(["data science"]),
+  e: new Set(["edge computing"]),
+  f: new Set(["fintech"]),
+  g: new Set(["gen ai"]),
+  h: new Set(["health tech"]),
+  i: new Set(["iot"]),
+};
+
+export const ProgrammingKeywords: { [key: string]: Set<string> } = {
+  a: new Set(["for"]),
+  b: new Set(["while"]),
+  c: new Set(["if"]),
+  d: new Set(["else"]),
+  e: new Set(["switch"]),
+  f: new Set(["case"]),
+  g: new Set(["default"]),
+  h: new Set(["break"]),
+};
+
+export const Frameworks: { [key: string]: Set<string> } = {
+  a: new Set(["react"]),
+  b: new Set(["angular"]),
+  c: new Set(["vue"]),
+  d: new Set(["svelte"]),
+  e: new Set(["next.js"]),
+  f: new Set(["nuxt.js"]),
+  g: new Set(["remix"]),
 };
