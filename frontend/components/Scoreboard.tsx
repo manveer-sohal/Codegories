@@ -2,11 +2,15 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGameStore } from "@/lib/store";
+import { useEffect } from "react";
 
 export default function Scoreboard() {
   const scores = useGameStore((s) => s.scores);
+  useEffect(() => {
+    console.log("scores", scores);
+  }, [scores]);
   return (
-    <Card className="w-full">
+    <Card className="w-full bg-black/60">
       <CardHeader>
         <CardTitle>Scoreboard</CardTitle>
       </CardHeader>
