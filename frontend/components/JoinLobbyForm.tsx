@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { joinRoom } from "@/lib/socket";
 import { useRouter } from "next/navigation";
-import { useGameStore } from "@/lib/store";
 import Input from "./ui/Input";
 import { validateLobbyId, validateNickname } from "@/lib/validation";
 import { JoinRoomStatus } from "@/types/JoinRoomStatus";
