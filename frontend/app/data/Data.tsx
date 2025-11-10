@@ -528,6 +528,7 @@ export const TechCompanies: { [key: string]: Set<string> } = {
     "lucid software",
     "lyft",
     "lightspeed commerce",
+    "lumen",
   ]),
   m: new Set([
     "microsoft",
