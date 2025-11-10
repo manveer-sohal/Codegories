@@ -45,6 +45,20 @@ export default function ResultsPage() {
       <div className="flex justify-end">
         <Button onClick={handleResetGame}>Play Again</Button>
       </div>
+      <div className="flex justify-center gap-4 items-end">
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-white/70 text-sm">Second Place</p>
+          <div className="w-20 h-40 bg-white/10 rounded-full"></div>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-white/70 text-sm">First Place</p>
+          <div className="w-20 h-60 bg-white/10 rounded-full"></div>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-white/70 text-sm">Third Place</p>
+          <div className="w-20 h-25 bg-white/10 rounded-full"></div>
+        </div>
+      </div>
     </div>
   );
 }
