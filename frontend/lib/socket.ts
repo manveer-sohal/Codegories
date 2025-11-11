@@ -221,11 +221,11 @@ export async function leaveRoom(roomId: string) {
   useGameStore.setState({ currentRound: undefined });
   console.log("leaveRoom response", response);
 }
-
-export function submitAnswer(answer: string) {
+export function updateScore(score: number) {
   const { roomId } = useGameStore.getState();
   if (!roomId) return;
-  getSocket().emit("submit_answer", { roomId, answer });
+  console.log("updateScore", roomId, score);
+  getSocket().emit("submit_answer", { roomId, score });
 }
 
 // export function readyNextRound() {

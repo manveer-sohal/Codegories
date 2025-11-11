@@ -282,12 +282,12 @@ export default function gameHandler(io, socket) {
     startRound(io, roomId, 30);
   });
 
-  socket.on("submit_answer", ({ roomId, answer }) => {
+  socket.on("submit_answer", ({ roomId, score }) => {
     if (!roomId) return;
     const room = activeRooms.get(roomId);
     if (!room) return;
     const prev = room.scores.get(socket.id) || 0;
-    room.scores.set(socket.id, prev + 1);
+    room.scores.set(socket.id, prev + score);
     const scores = Array.from(room.scores.entries()).map(
       ([playerId, score]) => ({
         playerId,
