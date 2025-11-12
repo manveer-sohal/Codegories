@@ -12,6 +12,7 @@ export interface Player {
   name: string;
   playerType: "Host" | "Player";
   wins: number;
+  avatar: string;
 }
 
 export interface PlayerScore {
@@ -37,6 +38,7 @@ export interface CodegoriesRoundData {
 }
 
 export interface GameState {
+  avatar: string;
   codegoriesRoundData?: CodegoriesRoundData;
   game: "codegories" | "speedstorm" | "trivia";
   playerType: "None" | "Host" | "Player";
@@ -71,6 +73,8 @@ export interface GameState {
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
+  avatar: "avatar1",
+  setAvatar: (avatar: string) => set({ avatar }),
   game: "codegories",
   playerType: "None",
   playerName: "",
