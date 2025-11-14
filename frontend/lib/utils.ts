@@ -11,7 +11,7 @@ export function cn(...inputs: ClassValue[]): string {
 export function newRound() {
   useGameStore.setState({
     playerInput: [],
-    scores: [],
+    score: 0,
     lastSubmittedAnswer: undefined,
   });
 }

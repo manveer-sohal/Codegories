@@ -2,15 +2,15 @@
 
 import { io, type Socket } from "socket.io-client";
 import { GamePhase, Player, useGameStore } from "@/lib/store";
-import { JoinRoomStatus } from "@/types/JoinRoomStatus";
-import { CreateLobbyFormStatus } from "@/types/FormStatus";
 
 let socket: Socket | null = null;
 
 export function getSocket(): Socket {
   console.log("getSocket");
   if (!socket) {
-    const url = process.env.NEXT_PUBLIC_SOCKET_URL ?? "ws://localhost:4000";
+    // const url = process.env.NEXT_PUBLIC_SOCKET_URL ?? "ws://localhost:4000";
+    const url = "ws://localhost:4000";
+
     console.log("url", url);
 
     socket = io(url, {
@@ -62,17 +62,28 @@ function attachCoreListeners(s: Socket) {
     useGameStore.getState().updateTimeRemaining(seconds);
   });
 
-  s.on(
-    "score_update",
-    (scores: { playerId: string; name: string; score: number }[]) => {
-      console.log("score update");
-      useGameStore.getState().setScores(scores);
-    }
-  );
+  s.on("score_update", (playerId: string, score: number) => {
+    console.log("score update", playerId, score);
+    useGameStore.getState().updateScore(playerId, score);
+  });
+
+  s.on("wins_update", (playerId: string) => {
+    console.log("wins update");
+    useGameStore.getState().updateWinner(playerId);
+  });
+
+  s.on("add_player", (player: Player) => {
+    console.log("add player", player);
+    useGameStore.getState().addPlayer(player);
+  });
+
+  s.on("set_players_list", (players: Record<string, Player>) => {
+    console.log("get players list", players);
+    useGameStore.setState({ players: new Map(Object.entries(players)) });
+  });
 
   s.on("round_end", () => {
     console.log("round end");
-
     useGameStore.setState({ phase: "final_results" });
   });
 
@@ -81,204 +92,29 @@ function attachCoreListeners(s: Socket) {
 
     useGameStore.setState({ playerCount: playerCount });
   });
+
   s.on("update_phase", (phase: GamePhase) => {
     console.log("update_phase", phase);
     useGameStore.setState({ phase: phase });
   });
 
-  s.on("players_update", (players: Player[]) => {
-    console.log("players_update", players);
-    useGameStore.setState({ players: players });
-  });
   s.on("start_game", () => {
     console.log("starting game");
     useGameStore.setState({ phase: "playing" });
   });
+
   s.on("kick_player", (playerId: string) => {
     console.log("kicking player", playerId);
-    useGameStore.setState({
-      players: useGameStore
-        .getState()
-        .players.filter((player) => player.id !== playerId),
-    });
+    useGameStore.getState().removePlayer(playerId);
   });
 
   s.on("leave_room", () => {
     console.log("leaving room");
-    useGameStore.setState({ phase: "None" });
-    useGameStore.setState({ playerType: "None" });
-    useGameStore.setState({ roomId: undefined });
-    useGameStore.setState({ playerName: "" });
-    useGameStore.setState({ players: [] });
-    useGameStore.setState({ scores: [] });
-    useGameStore.setState({ playerCount: 0 });
-    useGameStore.setState({ playerInput: [] });
-    useGameStore.setState({ currentRound: undefined });
-    useGameStore.setState({ game: "codegories" });
+    useGameStore.getState().reset();
   });
+
   s.on("game_update", (game: "codegories" | "speedstorm" | "trivia") => {
     useGameStore.setState({ game: game });
     console.log("game_update", game);
   });
-}
-
-export async function setGame(
-  roomId: string,
-  game: "codegories" | "speedstorm" | "trivia"
-) {
-  const s = getSocket();
-  console.log("set_game", roomId, game);
-  s.connect();
-  // useGameStore.setState({ duration: 5 });
-  s.emit("set_game", { roomId, game });
-}
-
-export async function resetGame(roomId: string) {
-  const s = getSocket();
-  console.log("resetting game", roomId);
-  s.connect();
-  try {
-    const response = await s.emitWithAck("reset_game", { roomId });
-    useGameStore.setState({ playerInput: [] });
-    return response.success;
-  } catch (error) {
-    console.error("resetGame error", error);
-    return false;
-  }
-}
-
-export async function startGame(
-  roomId: string,
-  game: "codegories" | "speedstorm" | "trivia"
-) {
-  const s = getSocket();
-  console.log("starting game", roomId, game);
-  s.connect();
-  s.emit("start_game", { roomId });
-}
-export async function joinRoom(
-  roomId: string,
-  name: string
-): Promise<JoinRoomStatus> {
-  const s = getSocket();
-  s.connect();
-  console.log("Trying to join room", roomId, name);
-  try {
-    const response = await s.emitWithAck("join_room", { roomId, name });
-    console.log("joinRoom response", response);
-    if (!response.success) {
-      if (response.error === "room_not_found") {
-        return JoinRoomStatus.ROOM_NOT_FOUND; // room not found
-      }
-      if (response.error === "join_room_error") {
-        return JoinRoomStatus.JOIN_ERROR; // join room error
-      }
-      return JoinRoomStatus.JOIN_ERROR; // unknown error
-    }
-    useGameStore.setState({ roomId: roomId });
-    useGameStore.setState({ playerType: "Player" });
-    useGameStore.setState({ playerName: name });
-    // useGameStore.setState({ phase: "lobby" });
-    return JoinRoomStatus.SUCCESS; // success
-  } catch (error) {
-    console.error("joinRoom error", error);
-    return JoinRoomStatus.JOIN_ERROR; // unknown error
-  }
-}
-
-export async function deleteLobby(roomId: string) {
-  console.log("deleteLobby", roomId);
-  const s = getSocket();
-  s.connect();
-  try {
-    const response = await s.emitWithAck("delete_lobby", {
-      roomId,
-    });
-    return response.success;
-  } catch (error) {
-    console.error("deleteLobby error", error);
-    return false;
-  }
-}
-
-export async function leaveRoom(roomId: string) {
-  console.log("leaveRoom", roomId);
-  const s = getSocket();
-  s.connect();
-  const response = await s.emitWithAck("leave_room", {
-    roomId,
-    playerType: useGameStore.getState().playerType,
-  });
-
-  useGameStore.setState({ phase: "None" });
-  useGameStore.setState({ playerType: "None" });
-  useGameStore.setState({ roomId: undefined });
-  useGameStore.setState({ playerName: "" });
-  useGameStore.setState({ players: [] });
-  useGameStore.setState({ scores: [] });
-  useGameStore.setState({ playerCount: 0 });
-  useGameStore.setState({ playerInput: [] });
-  useGameStore.setState({ currentRound: undefined });
-  console.log("leaveRoom response", response);
-}
-
-export function submitAnswer(answer: string) {
-  const { roomId } = useGameStore.getState();
-  if (!roomId) return;
-  getSocket().emit("submit_answer", { roomId, answer });
-}
-
-// export function readyNextRound() {
-//   const { roomId } = useGameStore.getState();
-//   if (!roomId) return;
-//   getSocket().emit("ready_next_round", { roomId });
-// }
-
-export function roundEnd() {
-  console.log("end round");
-  const { roomId } = useGameStore.getState();
-  if (!roomId) return;
-  getSocket().emit("round_end", { roomId });
-}
-// Create lobby helper: emits create_lobby and returns roomId via ack or event
-export async function createLobby(name: string, roomIdOverride?: string) {
-  const s = getSocket();
-  s.connect();
-
-  try {
-    console.log("creating lobby", name, roomIdOverride);
-    const response = await s.emitWithAck("create_lobby", {
-      roomId: roomIdOverride,
-      name,
-    });
-    if (response.success) {
-      useGameStore.setState({ roomId: response.roomId ?? "" });
-      useGameStore.setState({ phase: "lobby" });
-      useGameStore.setState({ playerType: "Host" });
-      return {
-        roomId: response.roomId ?? "",
-        error: CreateLobbyFormStatus.SUCCESS,
-      };
-    }
-
-    if (response.error === "room_exists") {
-      return { roomId: "", error: CreateLobbyFormStatus.ROOM_EXISTS };
-    }
-    if (response.error === "create_error") {
-      return { roomId: "", error: CreateLobbyFormStatus.CREATE_ERROR };
-    }
-    return { roomId: "", error: CreateLobbyFormStatus.CREATE_ERROR };
-  } catch (e) {
-    console.error("createLobby error", e);
-    return { roomId: "", error: CreateLobbyFormStatus.CREATE_ERROR };
-  }
-}
-
-export async function checkRoomValid(roomId: string) {
-  const s = getSocket();
-  s.connect();
-  const response = await s.emitWithAck("check_room_valid", {
-    roomId,
-  });
-  return response.valid;
 }

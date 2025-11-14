@@ -5,6 +5,7 @@ import CreateLobbyForm from "@/components/CreateLobbyForm";
 import { useEffect } from "react";
 import { useGameStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
+import AvatarSelector from "@/components/AvatarSelector";
 export default function Home() {
   const lobbyId = useGameStore((s) => s.roomId);
   const phase = useGameStore((s) => s.phase);
@@ -17,7 +18,7 @@ export default function Home() {
     if (phase == "None") return;
   }, [lobbyId, router, phase, setPhase]);
   return (
-    <div className="mx-auto max-w-xl mt-8 ">
+    <div className="mx-auto max-w-xl mt-8 space-y-4">
       <h1 className="text-3xl font-bold mb-4">Welcome to Codegories</h1>
 
       <div className="grid grid-cols-2 gap-4">
@@ -31,6 +32,7 @@ export default function Home() {
           <CreateLobbyForm />
         </div>
       </div>
+      <AvatarSelector />
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useGameStore } from "@/lib/store";
-import { startGame, setGame } from "@/lib/socket";
+import { startGame, setGame } from "@/lib/socket_util";
 import PlayerList from "./PlayerList";
 import { newRound } from "@/lib/utils";
 

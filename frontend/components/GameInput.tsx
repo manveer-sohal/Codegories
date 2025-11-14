@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { submitAnswer } from "@/lib/socket";
+import { updateScore } from "@/lib/socket_util";
 import { useGameStore } from "@/lib/store";
 import { dataStructures } from "@/app/data/Data";
 
@@ -17,7 +17,7 @@ export default function GameInput() {
   >("empty");
   const timeRemaining = useGameStore((s) => s.currentRound?.timeRemaining);
   const [playerAnswer, setPlayerAnswer] = useState<Set<string>>(new Set());
-
+  const playerId = useGameStore((s) => s.playerId);
   // useEffect(() => {
   //   setValue(playerInput[0] || "");
   // }, [playerInput]);
@@ -53,7 +53,7 @@ export default function GameInput() {
     });
     setPlayerInput([...playerAnswer]);
     setInputStatus("correct");
-    submitAnswer(value.trim());
+    updateScore(1, playerId!);
     setLastSubmittedAnswer(value.trim());
     setValue("");
   };
