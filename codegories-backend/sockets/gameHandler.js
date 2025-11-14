@@ -1,211 +1,26 @@
-const activeRooms = new Map();
-
-function roundEnd(io, roomId) {
-  console.log("Round end");
-  const room = activeRooms.get(roomId);
-  if (!room) return;
-
-  // find the winner
-  const winner = Array.from(room.scores.entries()).reduce(
-    (max, [playerId, score]) => {
-      return score > max.score ? { playerId, score } : max;
-    },
-    { playerId: null, score: 0 }
-  );
-  console.log("winner", winner);
-  if (winner.playerId) {
-    room.players.get(winner.playerId).wins += 1;
-  }
-  io.to(roomId).emit(
-    "players_update",
-    Array.from(room.players.values()).map((player) => ({
-      id: player.id,
-      name: player.name,
-      playerType: player.playerType,
-      wins: player.wins,
-    }))
-  );
-}
-
-function joinRoom(io, socket, roomId, name, playerType) {
-  try {
-    const room = activeRooms.get(roomId);
-    if (!room) {
-      console.error("room not found", roomId);
-      return false;
-    }
-    console.log("room found", room);
-    // player joins room
-    socket.join(roomId);
-    // add player to room
-    room.players.set(socket.id, {
-      name: name || `Player-${socket.id.slice(-4)}`,
-      playerType: playerType,
-      wins: 0,
-    });
-    // update player count
-    room.playerCount = room.players.size;
-    console.log("game type", room.game);
-
-    // send updated player count in room
-    io.to(roomId).emit("player_count_update", room.playerCount);
-    io.to(roomId).emit("game_update", room.game);
-
-    if (room.phase == "playing") {
-      console.log("change phase to playing:", room.timeRemaining);
-      io.to(roomId).emit("timer_update", room.timeRemaining);
-      io.to(roomId).emit("round_start", {
-        category: room.category,
-        letter: room.letter,
-        roundNumber: room.round,
-        duration: room.timeRemaining,
-        startedAt: room.startedAt,
-        game: room.game,
-      });
-    }
-    // send updated phase to player
-    io.to(roomId).emit("update_phase", room.phase);
-
-    // send updated players in room
-    io.to(roomId).emit(
-      "players_update",
-      Array.from(room.players.values()).map((player) => ({
-        id: player.id,
-        name: player.name,
-        playerType: player.playerType,
-        wins: player.wins,
-      }))
-    );
-    if (!room.scores.has(socket.id)) room.scores.set(socket.id, 0);
-
-    console.log("Room.players: ", room.players);
-    console.log("phase updated", room.phase, socket.id);
-
-    // send updated phase to player
-    return true;
-  } catch (error) {
-    console.error("joinRoom error", error);
-    throw new Error("joinRoom error");
-  }
-}
-function generateRoomId() {
-  return Math.random().toString(36).slice(2, 8);
-}
-
-function deleteRoom(io, roomId) {
-  const room = activeRooms.get(roomId);
-  if (room) {
-    console.log("deleting room on delete room", roomId);
-    io.to(roomId).emit("update_phase", "None");
-    io.to(roomId).emit("players_update", []);
-    io.to(roomId).emit("score_update", []);
-    io.to(roomId).emit("timer_update", 0);
-    io.to(roomId).emit("leave_room", {});
-    activeRooms.delete(roomId);
-    const roomDeleted = activeRooms.get(roomId);
-    console.log("room deleted", roomDeleted);
-
-    return;
-  }
-  return false;
-}
-function createRoom(roomId) {
-  const room = activeRooms.get(roomId);
-  if (room) {
-    if (room.players.size == 0) {
-      activeRooms.delete(roomId);
-    }
-  }
-
-  if (!activeRooms.has(roomId)) {
-    activeRooms.set(roomId, {
-      players: new Map(), // socketId -> { name, playerType, wins }
-      scores: new Map(), // socketId -> number
-      round: 1,
-      timeRemaining: 0,
-      timer: null,
-      playerCount: 0,
-      phase: "lobby",
-      game: "codegories",
-    });
-    return true;
-  }
-  return false;
-}
-function ensureRoom(roomId) {
-  if (!activeRooms.has(roomId)) {
-    activeRooms.set(roomId, {
-      players: new Map(), // socketId -> { name, playerType, wins }
-      scores: new Map(), // socketId -> number
-      round: 1,
-      timeRemaining: 0,
-      timer: null,
-      playerCount: 0,
-      phase: "lobby",
-    });
-  }
-  return activeRooms.get(roomId);
-}
-
-const chooseRandomLetter = () => {
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const randomLetter = letters[Math.floor(Math.random() * letters.length)];
-  return randomLetter;
-};
-
-function startRound(io, roomId, duration = 30) {
-  const room = ensureRoom(roomId);
-  const category = "Data Structures";
-  const letter = chooseRandomLetter();
-  console.log("Start Round:", room.timeRemaining);
-  room.timeRemaining = duration;
-  const startedAt = Date.now();
-  room.phase = "playing";
-  io.to(roomId).emit("round_start", {
-    category,
-    letter,
-    roundNumber: room.round,
-    duration,
-    startedAt,
-    game: room.game,
-  });
-
-  if (room.timer) clearInterval(room.timer);
-  room.timer = setInterval(() => {
-    room.timeRemaining = room.timeRemaining - 1;
-
-    io.to(roomId).emit("timer_update", room.timeRemaining);
-    if (room.timeRemaining == -1) {
-      clearInterval(room.timer);
-      roundEnd(io, roomId);
-      room.timer = null;
-      room.phase = "final_results";
-      io.to(roomId).emit("update_phase", room.phase);
-      io.to(roomId).emit("round_end", {
-        valid: [],
-        invalid: [],
-        duplicates: [],
-        nextIn: 3,
-      });
-    }
-  }, 1000);
-}
+import { createRoom, deleteRoom, joinRoom } from "./roomManager.js";
+import { generateRoomId, startRound, getRoom } from "./utils.js";
+export const activeRooms = new Map();
 
 export default function gameHandler(io, socket) {
   socket.on("delete_lobby", ({ roomId }, ack) => {
     console.log("deleting lobby", roomId);
-    const success = deleteRoom(roomId);
+
+    const success = deleteRoom(io, roomId);
+
     if (!success) {
       if (ack) return ack({ error: "delete_room_error" });
       return { error: "delete_room_error" };
     }
+
     console.log("room deleted", roomId);
     io.to(roomId).emit("update_phase", "None");
 
     if (ack) return ack({ success: true });
     return { success: true };
   });
-  socket.on("create_lobby", ({ name, roomId }, ack) => {
+  socket.on("create_lobby", ({ name, roomId, avatar }, ack) => {
+    console.log("create_lobby", name, roomId, avatar);
     const id = roomId ?? generateRoomId();
     try {
       console.log("create_lobby", name, roomId);
@@ -217,7 +32,7 @@ export default function gameHandler(io, socket) {
 
       console.log("room created", id);
 
-      const roomJoinSuccess = joinRoom(io, socket, id, name, "Host");
+      const roomJoinSuccess = joinRoom(io, socket, id, name, "Host", avatar);
       if (!roomJoinSuccess) {
         if (ack) return ack({ error: "join_room_error" });
         // delete the room
@@ -245,9 +60,17 @@ export default function gameHandler(io, socket) {
   socket.on("join_room", (data, ack) => {
     try {
       console.log("join_room", data);
-      const { roomId, name } = data;
+      const { roomId, name, avatar } = data;
+      console.log("avatar", avatar);
 
-      const roomJoinSuccess = joinRoom(io, socket, roomId, name, "Player");
+      const roomJoinSuccess = joinRoom(
+        io,
+        socket,
+        roomId,
+        name,
+        "Player",
+        avatar
+      );
       console.log("roomJoinSuccess", roomJoinSuccess);
       if (!roomJoinSuccess) {
         console.log("roomJoinSuccess false");
@@ -286,17 +109,13 @@ export default function gameHandler(io, socket) {
     if (!roomId) return;
     const room = activeRooms.get(roomId);
     if (!room) return;
-    const prev = room.scores.get(socket.id) || 0;
-    room.scores.set(socket.id, prev + score);
-    const scores = Array.from(room.scores.entries()).map(
-      ([playerId, score]) => ({
-        playerId,
-        name: room.players.get(playerId)?.name || "Player",
-        score,
-      })
-    );
-    io.to(roomId).emit("score_update", scores);
+
+    const player = room.players.get(socket.id);
+    player.score = player.score + score;
+    // update the score and send to all of the players in the room except the player himself
+    io.to(roomId).emit("score_update", socket.id, player.score);
   });
+
   socket.on("check_room_valid", ({ roomId }, ack) => {
     const room = activeRooms.get(roomId);
     if (!room) {
@@ -326,16 +145,22 @@ export default function gameHandler(io, socket) {
     room.timeRemaining = 0;
     room.timer = null;
     console.log("players new 1", room.players.values());
-    console.log("SCORES new 1", room.scores);
 
     for (const [playerId, _] of room.players.entries()) {
-      if (room.scores.has(playerId)) {
-        room.scores.set(playerId, 0);
+      if (room.players.has(playerId)) {
+        room.players.set(playerId, {
+          id: playerId,
+          name: room.players.get(playerId).name,
+          playerType: room.players.get(playerId).playerType,
+          wins: room.players.get(playerId).wins,
+          avatar: room.players.get(playerId).avatar,
+          score: 0,
+        });
       }
     }
 
     console.log("players new 2", room.players.values());
-    console.log("SCORES new 2", room.scores);
+    console.log("SCORES new 2", room.players);
     if (ack) {
       console.log("ack success");
       ack({ success: true });
@@ -345,64 +170,56 @@ export default function gameHandler(io, socket) {
     return { success: false };
   });
   socket.on("round_end", ({ roomId }) => {
-    console.log("Round end");
+    console.log("Round ended");
     const room = activeRooms.get(roomId);
     if (!room) return;
 
     // find the winner
-    const winner = Array.from(room.scores.entries()).reduce(
-      (max, [playerId, score]) => {
-        return score > max.score ? { playerId, score } : max;
+    const winner = Array.from(room.players.entries()).reduce(
+      (max, [playerId, player]) => {
+        return player.score > max.score
+          ? { playerId, score: player.score }
+          : max;
       },
       { playerId: null, score: 0 }
     );
-    console.log("winner", winner);
+    console.log("winner is", winner.playerId, "with score", winner.score);
     room.players.get(winner.playerId).wins += 1;
-    io.to(roomId).emit(
-      "players_update",
-      Array.from(room.players.values()).map((player) => ({
-        id: player.id,
-        name: player.name,
-        playerType: player.playerType,
-        wins: player.wins,
-      }))
-    );
+
+    io.to(roomId).emit("wins_update", winner.playerId);
 
     room.phase = "final_results";
-    console.log("scores", room.scores);
+    console.log("scores", room.players);
     console.log("final_results", room.phase);
     io.to(roomId).emit("update_phase", room.phase);
   });
 
-  // socket.on("ready_next_round", ({ roomId }) => {
-  //   const room = activeRooms.get(roomId);
-  //   if (!room) return;
-  //   room.round += 1;
-  //   room.phase = "round_results";
-  //   io.to(roomId).emit("update_phase", room.phase);
-  //   startRound(io, roomId, 30);
-  // });
   socket.on("leave_room", ({ roomId, playerType }) => {
-    const room = activeRooms.get(roomId);
+    console.log("leave room", roomId, playerType);
+    const room = getRoom(roomId);
+    console.log("leave room", room);
     if (!room) return;
+
+    const playerId = socket.id;
+    // leave room from server
     socket.leave(roomId);
+
+    // if the player is the host, delete the room
     if (playerType === "Host") {
       deleteRoom(io, roomId);
       return;
     }
+    // remove socket from player list
     room.players.delete(socket.id);
-    room.scores.delete(socket.id);
     room.playerCount -= 1;
+
+    // update the player count for all players in the room
     io.to(roomId).emit("player_count_update", room.playerCount);
-    io.to(roomId).emit(
-      "players_update",
-      Array.from(room.players.values()).map((player) => ({
-        id: player.id,
-        name: player.name,
-        playerType: player.playerType,
-      }))
-    );
-    console.log("player count updated", room.playerCount);
+
+    // update the players list for all players in the room
+    io.to(roomId).emit("kick_player", playerId);
+
+    // if the room is empty, delete the room
     if (room.playerCount === 0) {
       console.log("room deleted", roomId);
       activeRooms.delete(roomId);
@@ -414,7 +231,6 @@ export default function gameHandler(io, socket) {
     for (const [roomId, room] of activeRooms.entries()) {
       if (room.players.has(socket.id)) {
         room.players.delete(socket.id);
-        room.scores.delete(socket.id);
 
         if (room.players.size === 0) {
           if (room.timer) clearInterval(room.timer);
