@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { joinRoom } from "@/lib/socket";
+import { joinRoom } from "@/lib/socket_util";
 import { useRouter } from "next/navigation";
 import Input from "./ui/Input";
 import { validateLobbyId, validateNickname } from "@/lib/validation";
 import { JoinRoomStatus } from "@/types/JoinRoomStatus";
 import { JoinRoomFormStatus } from "@/types/FormStatus";
+import { useGameStore } from "@/lib/store";
 
 function JoinLobbyForm() {
   const [nickname, setNickname] = useState("");
@@ -34,10 +35,10 @@ function JoinLobbyForm() {
       return;
     }
     const name = nickname.trim() || "Guest";
-
+    const avatar = useGameStore.getState().avatar;
     // setPlayerName(name);
     console.log("joining room", lobbyId, name);
-    const joinRoomStatusAck = await joinRoom(lobbyId, name);
+    const joinRoomStatusAck = await joinRoom(lobbyId, name, avatar);
     console.log("joinRoomStatusAck", joinRoomStatusAck);
     if (joinRoomStatusAck === JoinRoomStatus.ROOM_NOT_FOUND) {
       console.log("room not found");

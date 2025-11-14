@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
-import { createLobby } from "@/lib/socket";
+import { createLobby } from "@/lib/socket_util";
 import { useRouter } from "next/navigation";
 import { useGameStore } from "@/lib/store";
 import Input from "./ui/Input";
@@ -10,6 +10,7 @@ import { CreateLobbyFormStatus } from "@/types/FormStatus";
 function CreateLobbyForm() {
   const [createdLobbyId, setCreatedLobbyId] = useState("");
   const [nickname, setNickname] = useState("");
+  const avatar = useGameStore((s) => s.avatar);
   // Ensure socket singleton is initialised lazily when actions run
   const router = useRouter();
   const setPlayerName = useGameStore((s) => s.setPlayerName);
@@ -42,7 +43,7 @@ function CreateLobbyForm() {
     setPlayerName(name);
     const desiredId = createdLobbyId.trim() || undefined;
     try {
-      const response = await createLobby(name, desiredId);
+      const response = await createLobby(name, avatar, desiredId);
       if (response.error === CreateLobbyFormStatus.ROOM_EXISTS) {
         setLobbyIdError(CreateLobbyFormStatus.ROOM_EXISTS);
         return;
