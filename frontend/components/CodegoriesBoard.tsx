@@ -10,15 +10,15 @@ import {
   Frameworks,
 } from "@/app/data/Data";
 import { useGameStore } from "@/lib/store";
-import { updateScore } from "@/lib/socket";
+import { updateScore } from "@/lib/socket_util";
 export default function CodegoriesBoard({ letter }: { letter: string }) {
   // const currentRound = useGameStore((s) => s.currentRound);
   // const codegoriesRoundData = useGameStore((s) => s.codegoriesRoundData);
   const [answers, setAnswers] = useState<{ [key: string]: string }>({});
-  const [score, setScore] = useState<number>(0);
   // const categories = codegoriesRoundData?.categories ?? [];
   const [submitted, setSubmitted] = useState<boolean>(false);
   const timeRemaining = useGameStore((s) => s.currentRound?.timeRemaining);
+  const playerId = useGameStore((s) => s.playerId);
   const categories = [
     "Data Structure",
     "Algorithm",
@@ -29,36 +29,43 @@ export default function CodegoriesBoard({ letter }: { letter: string }) {
     "Framework",
   ];
   const submitCategories = useCallback(() => {
+    let score = 0;
     if (submitted) return;
     setSubmitted(true);
+
     if (DataStructures[letter].has(answers["Data Structure"])) {
-      setScore(score + 1);
+      console.log("Data Structure correct");
+      score++;
     }
     if (Algorithms[letter].has(answers["Algorithm"])) {
-      setScore(score + 1);
+      console.log("Algorithm correct");
+      score++;
     }
     if (ProgrammingLanguages[letter].has(answers["Programming Language"])) {
-      setScore(score + 1);
+      console.log("Programming Language correct");
+      score++;
     }
 
     if (TechCompanies[letter].has(answers["Tech Company"])) {
-      setScore(score + 1);
+      console.log("Tech Company correct");
+      score++;
     }
     if (CSBuzzwords[letter].has(answers["CS Buzzword / Jargon"])) {
-      setScore(score + 1);
+      console.log("CS Buzzword / Jargon correct");
+      score++;
     }
     if (ProgrammingKeywords[letter].has(answers["Programming Keyword"])) {
-      setScore(score + 1);
+      console.log("Programming Keyword correct");
+      score++;
     }
     if (Frameworks[letter].has(answers["Framework"])) {
-      setScore(score + 1);
+      console.log("Framework correct");
+      score++;
     }
-    console.log("score", score);
-    if (score > 0) {
-      updateScore(score);
-    }
-  }, [submitted, answers, letter, score]);
+    updateScore(score, playerId!);
+  }, [submitted, answers, letter, playerId]);
 
+  // so if any value in submitcategories dependencie array changes, we create a new function so it has the updated value
   useEffect(() => {
     // if time remaining is 0, submit categories automatically
     if (timeRemaining && timeRemaining <= 0) {
