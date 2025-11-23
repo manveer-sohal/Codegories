@@ -7,10 +7,12 @@ import { validateLobbyId, validateNickname } from "@/lib/validation";
 import { JoinRoomStatus } from "@/types/JoinRoomStatus";
 import { JoinRoomFormStatus } from "@/types/FormStatus";
 import { useGameStore } from "@/lib/store";
+import { Loader2 } from "lucide-react";
 
 function JoinLobbyForm() {
   const [nickname, setNickname] = useState("");
   const [lobbyId, setLobbyId] = useState("");
+  const [loading, setLoading] = useState(false);
   const [nicknameError, setNicknameError] = useState<
     JoinRoomFormStatus | undefined
   >(undefined);
@@ -31,6 +33,7 @@ function JoinLobbyForm() {
   };
 
   const handleJoinLobby = async () => {
+    setLoading(true);
     if (!checkFormValid()) {
       return;
     }
@@ -43,17 +46,20 @@ function JoinLobbyForm() {
     if (joinRoomStatusAck === JoinRoomStatus.ROOM_NOT_FOUND) {
       console.log("room not found");
       setLobbyIdError(JoinRoomFormStatus.LOBBY_ID_NOT_FOUND);
+      setLoading(false);
       return;
     }
     if (joinRoomStatusAck === JoinRoomStatus.JOIN_ERROR) {
       console.log("join error");
       setLobbyIdError(JoinRoomFormStatus.JOIN_ERROR);
+      setLoading(false);
       return;
     }
 
     console.log("joining room", lobbyId);
 
     router.push(`/game/${lobbyId}`);
+    setLoading(false);
   };
 
   return (
@@ -69,11 +75,15 @@ function JoinLobbyForm() {
       <Input
         value={lobbyId}
         onChange={(e) => setLobbyId(e.target.value)}
-        placeholder="Lobby id"
+        placeholder="Lobby id (4 digits)"
         error={lobbyIdError}
       />
-      <Button onClick={handleJoinLobby} variant={"secondary"}>
-        Join Lobby
+      <Button
+        onClick={handleJoinLobby}
+        variant={"secondary"}
+        disabled={loading}
+      >
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Join Lobby"}
       </Button>
     </div>
   );

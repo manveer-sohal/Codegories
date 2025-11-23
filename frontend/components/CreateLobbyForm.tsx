@@ -6,8 +6,10 @@ import { useGameStore } from "@/lib/store";
 import Input from "./ui/Input";
 import { validateLobbyId, validateNickname } from "@/lib/validation";
 import { CreateLobbyFormStatus } from "@/types/FormStatus";
+import { Loader2 } from "lucide-react";
 
 function CreateLobbyForm() {
+  const [loading, setLoading] = useState(false);
   const [createdLobbyId, setCreatedLobbyId] = useState("");
   const [nickname, setNickname] = useState("");
   const avatar = useGameStore((s) => s.avatar);
@@ -27,6 +29,7 @@ function CreateLobbyForm() {
   >(undefined);
 
   async function handleCreateLobby() {
+    setLoading(true);
     const nicknameError = validateNickname(nickname);
     if (nicknameError) {
       setNicknameError(nicknameError as CreateLobbyFormStatus);
@@ -46,20 +49,24 @@ function CreateLobbyForm() {
       const response = await createLobby(name, avatar, desiredId);
       if (response.error === CreateLobbyFormStatus.ROOM_EXISTS) {
         setLobbyIdError(CreateLobbyFormStatus.ROOM_EXISTS);
+        setLoading(false);
         return;
       }
       if (response.error === CreateLobbyFormStatus.CREATE_ERROR) {
         console.error("createLobby error", response.error);
         setFormStatus(CreateLobbyFormStatus.CREATE_ERROR);
+        setLoading(false);
         return;
       }
       if (response.error === CreateLobbyFormStatus.SUCCESS) {
         router.push(`/game/${response.roomId}`);
+        setLoading(false);
         return;
       }
     } catch (e) {
       console.error(e);
     }
+    setLoading(false);
   }
 
   return (
@@ -75,11 +82,19 @@ function CreateLobbyForm() {
       <Input
         value={createdLobbyId}
         onChange={(e) => setCreatedLobbyId(e.target.value)}
-        placeholder="Lobby id"
+        placeholder="Lobby id (4 digits)"
         error={lobbyIdError}
       />
-      <Button onClick={handleCreateLobby} variant={"secondary"}>
-        Create Lobby
+      <Button
+        onClick={handleCreateLobby}
+        variant={"secondary"}
+        disabled={loading}
+      >
+        {loading ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          "Create Lobby"
+        )}
       </Button>
       {formStatus === CreateLobbyFormStatus.CREATE_ERROR && (
         <p className="text-red-500 mt-2">
